@@ -1,0 +1,23 @@
+.tabButton
+  font-size: 13px
+  color: rgb(17, 17, 17)
+  outline: none
+  border: 0px
+  padding: 11px 24px 16px 24px
+  background: #f7f8fa linear-gradient(rgba(255, 255, 255, 0), rgba(0, 0, 0, 0.1))
+  box-shadow: 0 1px 0 1px rgb(255 255 255 / 30%) inset, 0 0 0 1px #adb2bb inset
+.tabButtonFirst
+  border-right-width: 0px
+  border-top-left-radius: 3px
+  border-bottom-left-radius: 3px
+.tabButtonLast
+  border-left-width: 0px
+  border-top-right-radius: 3px
+  border-bottom-right-radius: 3px
+.tabStrip
+  position: relative
+  top: -6px
+  height: 30px
+  border-top-width: 0
+  background: #f7f8fa linear-gradient(rgba(255, 255, 255, 0), rgba(0, 0, 0, 0.1))
+  box-shadow: 0 1px 0 1px rgb(255 255 255 / 30%) inset, 0 0 0 1px #adb2bb inset

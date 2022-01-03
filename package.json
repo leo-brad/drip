@@ -1,0 +1,46 @@
+{
+  "name": "drip-gui",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "eric hart",
+  "license": "MIT",
+  "description": "A gui for drip.",
+  "scripts": {
+    "build/main": "babel src/main.js --out-dir dist",
+    "dev": "webpack serve --config webpack.config.dev.js",
+    "pro": "webpack --config webpack.config.pro.js",
+    "start": "electron dist/main.js",
+    "lint": "eslint ./src"
+  },
+  "dependencies": {
+    "@babel/preset-react": "^7.16.7",
+    "electron": "^16.0.5",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "react-redux": "^7.2.6",
+    "react-router-dom": "^6.2.1",
+    "redux": "^4.1.2"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.16.7",
+    "@babel/core": "^7.16.7",
+    "@babel/preset-env": "^7.16.7",
+    "autoprefixer": "^10.4.1",
+    "babel-loader": "^8.2.3",
+    "babel-plugin-root-import": "^6.6.0",
+    "css-loader": "^6.5.1",
+    "eslint": "^8.6.0",
+    "eslint-plugin-import": "^2.25.4",
+    "eslint-plugin-react": "^7.28.0",
+    "html-webpack-plugin": "^5.5.0",
+    "jest": "^27.4.5",
+    "normalize.css": "^8.0.1",
+    "postcss": "^8.4.5",
+    "postcss-loader": "^6.2.1",
+    "style-loader": "^3.3.1",
+    "sugarss": "^4.0.1",
+    "webpack": "^5.65.0",
+    "webpack-cli": "^4.9.1",
+    "webpack-dev-server": "^4.7.2"
+  }
+}
