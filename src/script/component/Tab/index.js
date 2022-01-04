@@ -1,28 +1,38 @@
 import React from 'react';
-import component from '~/style/component.css';
+import style from './index.module.css';
+import IconSquare from '~/script/component/IconSquare';
 
 class Tab extends React.Component {
   render() {
     return (
       <div>
-        <div>
+        <div className={style.tabHeader}>
           <button
-            className={[component.tabButton, component.tabButtonFirst].join(' ')}
+            className={[style.tabButton, style.tabButtonFirst].join(' ')}
           >
+            <IconSquare>
+              <i className="fas fa-circle-notch"></i>
+            </IconSquare>
             Process1
           </button>
           <button
-            className={component.tabButton}
+            className={style.tabButton}
           >
+            <IconSquare>
+              <i className="fas fa-circle-notch"></i>
+            </IconSquare>
             Process2
           </button>
           <button
-            className={[component.tabButton, component.tabButtonLast].join(' ')}
+            className={[style.tabButton, style.tabButtonLast].join(' ')}
           >
+            <IconSquare>
+              <i className="fas fa-circle-notch"></i>
+            </IconSquare>
             Process3
           </button>
         </div>
-        <div className={component.tabStrip}></div>
+        <div className={style.tabStrip}></div>
       </div>
     );
   }

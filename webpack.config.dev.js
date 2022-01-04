@@ -34,10 +34,20 @@ module.exports = {
           {
             loader: 'css-loader',
             options: {
-              modules: true,
+              modules: {
+                auto: /\.module\.css$/
+              },
             },
           },
           'postcss-loader',
+        ]
+      },
+      {
+        test: /\.(png|jpe?g|gif|svg|ttf|woff|otf)$/,
+        use: [
+          {
+            loader: 'file-loader',
+          }
         ]
       },
     ],

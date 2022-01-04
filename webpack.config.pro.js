@@ -24,6 +24,27 @@ module.exports = {
         }
       },
       {
+        test: /\.css$/,
+        use: [
+          'style-loader',
+          'css-loader',
+          {
+            loader: 'postcss-loader',
+          },
+        ]
+      },
+    ],
+  },
+  module: {
+    rules: [
+      {
+        test: /\.js$/,
+        exclude: /node_modules/,
+        use: {
+          loader: 'babel-loader',
+        }
+      },
+      {
         test: /\.css$/i,
         use: [
           'style-loader',
@@ -34,6 +55,14 @@ module.exports = {
             },
           },
           'postcss-loader',
+        ]
+      },
+      {
+        test: /\.(png|jpe?g|gif|svg|ttf|woff|otf)$/,
+        use: [
+          {
+            loader: 'file-loader',
+          }
         ]
       },
     ],
