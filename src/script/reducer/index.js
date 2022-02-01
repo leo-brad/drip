@@ -1,3 +1,6 @@
-import { combineReducers } from 'redux';
+import { combineReducers, } from 'redux';
+import processReducer from './processReducer';
 
-export default combineReducers({});
+export default combineReducers({
+  process: processReducer,
+});

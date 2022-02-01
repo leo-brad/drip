@@ -1,3 +1,4 @@
+import ReceiveData from './ReceiveData';
 import { app, BrowserWindow, } from 'electron';
 
 function createWindow() {
@@ -5,6 +6,7 @@ function createWindow() {
     width: 800,
     height: 600,
   });
+  new ReceiveData().start();
   win.webContents.openDevTools();
   win.loadFile('./index.html');
 }

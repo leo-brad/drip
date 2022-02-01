@@ -51,7 +51,9 @@ module.exports = {
           {
             loader: 'css-loader',
             options: {
-              modules: true,
+              modules: {
+                auto: /\.module\.css$/
+              },
             },
           },
           'postcss-loader',

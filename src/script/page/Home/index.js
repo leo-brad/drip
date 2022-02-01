@@ -1,13 +1,11 @@
 import React from 'react';
-import Tab from '~/script/component/Tab';
-import Container from '~/script/component/Container';
+import Tab from '~/script/container/Tab';
 
 class Home extends React.Component {
   render() {
     return (
-      <Container>
-        <Tab />
-      </Container>
+      <Tab>
+      </Tab>
     );
   }
 }

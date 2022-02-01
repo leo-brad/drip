@@ -1,13 +1,10 @@
 {
-  "minified": true,
   "presets": [
     [
       "@babel/preset-env",
       {
-        "targets": {
-          "node": "current"
-        }
-      }
+        "targets": "defaults"
+      },
     ],
     "@babel/preset-react",
   ],

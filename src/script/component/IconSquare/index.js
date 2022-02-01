@@ -4,9 +4,9 @@ import style from './index.module.css';
 class IconSquare extends React.Component {
   render() {
     return (
-      <div className={style.IconSquare}>
+      <i className={[style.iconSquare, this.props.iconClass].join(' ')}>
         {this.props.children}
-      </div>
+      </i>
     );
   }
 }

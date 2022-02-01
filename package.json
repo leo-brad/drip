@@ -7,9 +7,10 @@
   "description": "A gui for drip.",
   "scripts": {
     "build/main": "babel src/main.js --out-dir dist",
+    "build/class": "babel src/class --out-dir dist",
     "dev": "webpack serve --config webpack.config.dev.js",
     "pro": "webpack --config webpack.config.pro.js",
-    "start": "electron dist/main.js",
+    "start": "yarn run build/main && yarn run build/class && electron dist/main.js",
     "lint": "eslint ./src"
   },
   "dependencies": {
