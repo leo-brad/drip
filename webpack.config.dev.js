@@ -3,15 +3,15 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
   mode: 'development',
-  entry: './src/script/index.js',
+  entry: './src/render/development.js',
   output: {
-    filename: '[name].bundle.js',
+    filename: 'render.bundle.js',
     path: path.resolve(__dirname, 'dist'),
   },
   plugins: [
     new HtmlWebpackPlugin({
       minify: true,
-      template: './src/html/index.html',
+      template: './src/render/html/index.html',
     }),
   ],
   devServer: {
@@ -22,7 +22,10 @@ module.exports = {
     rules: [
       {
         test: /\.js$/,
-        exclude: /node_modules/,
+        exclude: [
+          /node_modules/,
+          /electron/,
+        ],
         use: {
           loader: 'babel-loader',
         }
