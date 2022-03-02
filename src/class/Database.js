@@ -1,5 +1,5 @@
-import { fromInt, } from '~/main/lib/byteArray';
-import Table from '~/main/class/Table';
+import { fromInt, } from '~/lib/byteArray';
+import Table from '~/class/Table';
 import path from 'path';
 import fs from 'fs';
 

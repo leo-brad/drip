@@ -6,13 +6,9 @@
   "license": "MIT",
   "description": "A gui for drip.",
   "scripts": {
-    "run": "yarn run build && node dist/index.js  '/tmp/example/'",
+    "run": "yarn run build && node dist/index.js '{\"core\":{\"interval\":\"5000\",\"adjust\":\"0\",\"ignores\":[\".drip/local/\",\".git/\",\".gitkeep\"],\"plugins\":[\"shell\"]}}' '/tmp/example/'",
     "lint": "eslint ./src ",
-    "build": "babel src/main --out-dir dist",
-    "dev": "webpack serve --config webpack.config.dev.js",
-    "pro": "webpack --config webpack.config.pro.js",
-    "start": "yarn run build && yarn run pro && electron dist/main.js '{\"core\":{\"interval\":\"5000\",\"adjust\":\"0\",\"ignores\":[\".drip/local/\",\".git/\",\".gitkeep\"],\"plugins\":[\"shell\"]}}' /tmp/example",
-    "lint": "eslint ./src"
+    "build": "babel src/ --out-dir dist"
   },
   "dependencies": {
     "@babel/preset-react": "^7.16.7",

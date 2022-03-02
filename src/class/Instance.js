@@ -1,6 +1,6 @@
 import path from 'path';
 import fs from 'fs';
-import Proc from '~/main/class/Proc';
+import Proc from '~/class/Proc';
 
 class Instance {
   constructor(config, emitter,) {

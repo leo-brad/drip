@@ -1,10 +1,10 @@
 import path from 'path';
 import net from 'net';
-import WatchPath from '~/main/class/WatchPath';
-import PoolSize from '~/main/class/PoolSize';
-import ProcPool from '~/main/class/ProcPool';
-import HashFile from '~/main/class/HashFile';
-import { getPlugins, } from '~/main/lib/plugin';
+import WatchPath from '~/class/WatchPath';
+import PoolSize from '~/class/PoolSize';
+import ProcPool from '~/class/ProcPool';
+import HashFile from '~/class/HashFile';
+import { getPlugins, } from '~/lib/plugin';
 
 class EventSchedule {
   constructor({ priProcs=[], emitter=null, config={}, pattern='cmd' }) {

@@ -1,4 +1,4 @@
-import { toInt, fromInt, } from '~/main/lib/byteArray';
+import { toInt, fromInt, } from '~/lib/byteArray';
 import path from 'path';
 import fs from 'fs';
 

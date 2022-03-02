@@ -3,10 +3,9 @@ import { execSync, } from 'child_process';
 import EventEmitter from 'events';
 import path from 'path';
 import os from 'os';
-import ReceiveData from '~/main/class/ReceiveData';
-import EventSchedule from '~/main/class/EventSchedule';
-import Instance from '~/main/class/Instance';
-import PoolSize from '~/main/class/PoolSize';
+import EventSchedule from '~/class/EventSchedule';
+import Instance from '~/class/Instance';
+import PoolSize from '~/class/PoolSize';
 
 class ConfigExec {
   constructor({ config, projectPath, pattern='gui', }) {

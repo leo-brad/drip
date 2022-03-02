@@ -1,4 +1,4 @@
-import PriProcBucket from '~/main/class/PriProcBucket';
+import PriProcBucket from '~/class/PriProcBucket';
 
 class ProcPool {
   constructor(size) {

@@ -1,8 +1,8 @@
 import fs from 'fs';
 import path from 'path';
-import Database from '~/main/class/Database';
-import ContentHash from '~/main/class/ContentHash';
-import { fromInt, toInt, } from '~/main/lib/byteArray';
+import Database from '~/class/Database';
+import ContentHash from '~/class/ContentHash';
+import { fromInt, toInt, } from '~/lib/byteArray';
 
 function iteratorLastId(idxPath, c) {
   return fs.readdirSync(idxPath).every((n) => {
