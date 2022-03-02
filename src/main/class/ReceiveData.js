@@ -1,7 +1,7 @@
 import net from 'net';
 
 class ReceiveData {
-  constructor({ ipc=null, }) {
+  constructor(ipc) {
     this.ipc = ipc;
     this.buffers = [];
     this.register = {};
@@ -22,7 +22,7 @@ class ReceiveData {
         const buffer = this.buffers.shift();
         ipc.send('drip', buffer.toString());
       }
-    }, 500);
+    }, 0);
   }
 
   handleData() {

@@ -1,6 +1,5 @@
-import path from 'path';
 import { app, BrowserWindow, } from 'electron';
-import ReceiveData from '~/main/class/ReceiveData';
+import path from 'path';
 
 function createWindow() {
   const win = new BrowserWindow({
