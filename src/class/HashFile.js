@@ -105,7 +105,6 @@ class HashFile {
   perpareTable(name, size) {
     const { db, } = this;
     if (!db.checkTable(name)) {
-      db.dropTable(name);
       db.createTable(name, ['s', size]);
     }
   }

@@ -1,15 +1,15 @@
 import path from 'path';
 import net from 'net';
+import os from 'os';
 import WatchPath from '~/class/WatchPath';
 import PoolSize from '~/class/PoolSize';
 import ProcPool from '~/class/ProcPool';
 import HashFile from '~/class/HashFile';
-import { getPlugins, } from '~/lib/plugin';
+import { getPackages, } from '~/lib/plugin';
 
 class EventSchedule {
-  constructor({ priProcs=[], emitter=null, config={}, pattern='cmd' }) {
+  constructor({ priProcs=[], emitter=null, config={}, }) {
     this.pool = [];
-    this.pattern = pattern;
     this.emitter = emitter;
     this.priProcs = priProcs;
     //this.hf = new HashFile({});
@@ -18,18 +18,6 @@ class EventSchedule {
   }
 
   start() {
-    const { pattern, } = this;
-    switch (pattern) {
-      case 'cmd':
-        this.schedule();
-        break;
-      case 'gui':
-        this.initSocket();
-        break;
-    }
-  }
-
-  schedule() {
     this.sendPlugins();
     this.bindEvent();
     this.watchPath.start();
@@ -37,10 +25,7 @@ class EventSchedule {
   }
 
   writeData(data) {
-    const { socket, pattern, } = this;
-    if (pattern === 'gui') {
-      socket.write(JSON.stringify(data));
-    }
+    //console.log(JSON.stringify(data));
   }
 
   initSocket() {
@@ -52,7 +37,7 @@ class EventSchedule {
   }
 
   sendPlugins() {
-    const plugins = getPlugins();
+    const plugins = getPackages();
     const event = 'plugin';
     this.writeData([event, plugins]);
   }
@@ -77,6 +62,15 @@ class EventSchedule {
     }
   }
 
+  checkFreeMemory() {
+    const { config, } = this;
+    let ans = true;
+    if (os.freemem() / 1024 ** 2 > 500) {
+      ans = false;
+    }
+    return ans;
+  }
+
   bindEvent() {
     const { emitter, socket, } = this;
     emitter.on('file', (eventType, location) => {
@@ -85,7 +79,7 @@ class EventSchedule {
         .test(path.resolve(location))
       ) {
         //const { hf, } = this;
-        //hf.indexFile(location);
+        hf.indexFile(location);
       } else {
         this.cleanProcPool();
         this.fillProcPool(location);
@@ -93,6 +87,10 @@ class EventSchedule {
     });
     emitter.on('proc', async ({ field, instance, data='', id, }) => {
       const event = 'proc';
+      switch (field) {
+        case 'end':
+          break;
+      }
       this.writeData([event, instance, field, data, id,]);
     });
   }

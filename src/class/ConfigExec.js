@@ -8,25 +8,16 @@ import Instance from '~/class/Instance';
 import PoolSize from '~/class/PoolSize';
 
 class ConfigExec {
-  constructor({ config, projectPath, pattern='gui', }) {
+  constructor({ config, projectPath, }) {
     this.config = config;
-    this.pattern = pattern;
-    this.projectPath = projectPath;
     this.emitter = new EventEmitter();
-    this.changeDir();
-  }
-
-  changeDir() {
-    const { projectPath, } = this;
-    if (projectPath !== undefined) {
-      process.chdir(projectPath);
-    }
+    process.chdir(projectPath);
   }
 
   start() {
-    const { emitter, config, projectPath, pattern, } = this;
+    const { emitter, config, projectPath, } = this;
     const priProcs = new Instance(config, emitter).getPriProcs();
-    new EventSchedule({ emitter, config, priProcs, pattern }).start();
+    new EventSchedule({ emitter, config, priProcs, }).start();
   }
 }
 

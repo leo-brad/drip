@@ -27,14 +27,14 @@ class Instance {
       }).forEach((i) => {
         const regexp = /^\[(\w+)\]:(\w+)$/;
         if (regexp.test(i)) {
-          const [_, plugin] = i.match(regexp);
+          const [_, pkg] = i.match(regexp);
           const config = fs.readFileSync(fs.openSync(path.join(instancePath, i), 'r')).toString();
-          if (plugins.includes(plugin)) {
+          if (plugins.includes(pkg)) {
             const proc = new Proc({
               command: 'node',
               args: [
                 path.join(
-                  '.drip', 'local', 'plugin', plugin, 'dist', 'index.js'
+                  '.drip', 'local', 'package', pkg, 'dist', 'index.js'
                 ),
                 config,
               ],

@@ -55,22 +55,6 @@ class Database {
     const { dbPath, } = this;
     return new Table({ dbPath, name, });
   }
-
-  dropTable(name) {
-    const { dbPath, } = this;
-    const tablePath = path.join(dbPath, name);
-    if (fs.existsSync(tablePath)) {
-      fs.rmSync(tablePath);
-    }
-    const specsPath = path.join(dbPath, name + '-s');
-    if (fs.existsSync(specsPath)) {
-      fs.rmSync(specsPath);
-    }
-    const lengthPath = path.join(dbPath, name + '-l');
-    if (fs.existsSync(lengthPath)) {
-      fs.rmSync(lengthPath);
-    }
-  }
 }
 
 export default Database;
