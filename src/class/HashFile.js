@@ -1,13 +1,19 @@
 import fs from 'fs';
 import path from 'path';
-import Database from '~/class/Database';
 import ContentHash from '~/class/ContentHash';
+import Database from '~/class/Database';
 import { fromInt, toInt, } from '~/lib/byteArray';
 
-function iteratorLastId(idxPath, c) {
-  return fs.readdirSync(idxPath).every((n) => {
-    return c !== fs.readFileSync(path.join(idxPath, n)).toString();
-  });
+function iteratorLastId(idxPath, total, c) {
+  let ans = true;
+  for (let i = 0; i <= total; i += 1) {
+    const idPath = path.join(idxPath, String(i));
+    if (c === fs.readFileSync(idPath).toString()) {
+      ans = false;
+      break;
+    }
+  }
+  return ans;
 }
 
 function getHashTable(l) {
@@ -15,6 +21,7 @@ function getHashTable(l) {
   l.forEach((e) => {
     h[e] = true;
   });
+  return h;
 }
 
 class HashFile {
@@ -26,75 +33,76 @@ class HashFile {
     this.perpare();
   }
 
-  updateIndex(tb, name, idx) {
-    const { h, } = this;
-    const l = tb.selectAll();
-    if (h[name] === undefined) {
-      h[name] = getHashTable(l);
+  updateIndex(tb, h, c) {
+    if (h === undefined) {
+      h = getHashTable(tb.selectAll());
     }
-    if (!h[name][idx]) {
-      tb.insert([idx]);
+    if (h[c] === undefined) {
+      tb.insert([c]);
+      h[c] = true;
     }
   }
 
   getPart() {
     const { l, } = this;
-    return 12 * 6 * l;
+    return 7 * 6 ** l;
   }
 
   indexFile(location) {
     const { l, } = this;
     const i = [];
-    let c = fs.readFileSync(location);
-    const p = c.substring(0, this.getPart());
-    for (let j = 1; j < l; j += 1) {
-      i.unshift(c);
-      c = new HashContent({ content: c, }).getHash();
+    const c = fs.readFileSync(location).toString();
+    let p = c.substring(0, this.getPart());
+    for (let j = 1; j <= l; j += 1) {
+      p = new ContentHash({ content: p, }).getHash();
+      i.unshift(p);
     }
-    let n;
-    i.forEach((k, x) => {
-      n = this.perpareNextLevel(n, k, x + 1);
-    });
-    this.perpareInstanceIndex(n, c);
+    let h;
+    for (let j = 0; j < i.length; j += 1) {
+      const k = i[j];
+      h = this.perpareNextLevel(k, h, j + 1);
+    }
+    this.perpareInstanceIndex(i.pop(), c);
   }
 
-  perpareInstanceIndex(n, c) {
-    const { iiPath, } = this;
-    const idxPath = path.join(iiPath, n);
-    const totalPath = path.join(idxPath, 't');
-    if (!fs.exists(idxPath)) {
-      fs.mkdirSync(idxPath);
-      fs.writeFileSync(totalPath, fromInt(0));
-    } else {
-      if (iteratorLastId(idxPath, c)) {
-        if (!fs.exists(totalPath)) {
-          total = toInt(fs.readFileSync(totalPath)) + 1;
-          fs.writeFileSync(totalPath, fromInt(total));
-          fs.writeFileSync(path.join(idxPath, total), c);
-        }
-      }
-    }
-  }
-
-  perpareNextLevel(n, c, level) {
+  perpareNextLevel(c, h=this.h, level) {
     const { db, l, } = this;
     let ans;
     if (level === 1) {
+      this.perpareTable('fi', 7);
       const tb = db.selectTable('fi');
-      updateIndex(tb, n, c);
-      ans = tb;
+      this.updateIndex(tb, h, c);
+      ans = h;
     } else {
-      this.perpareTable(n);
-      const tb = db.selectTable(n);
-      updateIndex(tb, n, c);
-      ans = tb;
+      this.perpareTable(c, (level - 1) * 6 * 7);
+      const tb = db.selectTable(c);
+      this.updateIndex(tb, h, c);
+      ans = h;
     }
     return ans;
   }
 
+  perpareInstanceIndex(h, c) {
+    const { iiPath, } = this;
+    const idxPath = path.resolve(path.join(iiPath, h));
+    const totalPath = path.join(idxPath, 't');
+    if (!fs.existsSync(idxPath)) {
+      fs.mkdirSync(idxPath, { recursive: true, });
+      fs.appendFileSync(totalPath, Buffer.from(fromInt(0)));
+      const idPath = path.join(idxPath, String(0));
+      fs.appendFileSync(idPath, c);
+    } else {
+      const total = toInt(fs.readFileSync(totalPath));
+      if (iteratorLastId(idxPath, total, c)) {
+        const idPath = path.join(idxPath, String(total + 1));
+        fs.appendFileSync(idPath, c);
+        fs.writeFileSync(fs.openSync(totalPath, 'w'), Buffer.from(fromInt(total + 1)));
+      }
+    }
+  }
+
   perpare() {
     this.perpareDb();
-    this.perpareTable('fi');
   }
 
   perpareDb() {
@@ -105,7 +113,7 @@ class HashFile {
   perpareTable(name, size) {
     const { db, } = this;
     if (!db.checkTable(name)) {
-      db.createTable(name, ['s', size]);
+      db.createTable(name, [['s', size]]);
     }
   }
 }

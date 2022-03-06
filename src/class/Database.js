@@ -34,18 +34,16 @@ class Database {
   createTable(name, specs) {
     const { dbPath, } = this;
     const specsPath = path.join(dbPath, name + '-s');
-    fs.writeFileSync(specsPath, JSON.stringify(specs));
+    fs.appendFileSync(specsPath, JSON.stringify(specs));
     const lengthPath = path.join(dbPath, name + '-l');
     let length = 0;
     specs.forEach((s) => {
       const [_, l] = s;
       length += l;
     });
-    fs.writeSync(
-      fs.openSync(lengthPath, 'w'),
+    fs.appendFileSync(
+      lengthPath,
       Buffer.from(fromInt(length)),
-      0,
-      fromInt(length).length,
     );
     const tablePath = path.join(dbPath, name);
     fs.openSync(tablePath, 'a');

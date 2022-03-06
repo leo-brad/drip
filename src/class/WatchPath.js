@@ -31,7 +31,7 @@ class WatchPath {
       fs.readdirSync(location, {
         withFileTyps: true,
       }).forEach((n) => {
-        if (!this.check(location)) {
+        if (!this.check(n)) {
           this.recurse(path.join(location, n));
         }
       });
@@ -83,8 +83,8 @@ class WatchPath {
     } = config;
     let ans = false;
     if (
-      /^\/.drip\/local\/instance\/\[(\w+)\]:(\w+)$/
-      .test(path.resolve(location))
+      /^\.drip\/local\/instance\/\[(\w+)\]:(\w+)$/
+      .test(path.relative('.', location))
     ) {
       return ans;
     }

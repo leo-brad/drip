@@ -1,5 +1,5 @@
 class ContentHash {
-  constructor({ content='', size=256, long=5, start, end, }) {
+  constructor({ content='', size=255, long=5, start, end, }) {
     this.content = content;
     this.size = size;
     this.long = long;
@@ -9,17 +9,17 @@ class ContentHash {
 
   initRange() {
     const { content, start, end, } = this;
-    if (start) {
+    if (start === undefined) {
       this.start = 0;
     }
-    if (end) {
+    if (end === undefined) {
       this.end = Math.ceil(content.length / 6) * 6;
     }
   }
 
   checkOverflow() {
     const { size, long, } = this;
-    let r = 0;
+    let r = 1;
     for (let i = 1; i <= long; i += 1) {
       r += size ** i;
     }
@@ -33,15 +33,12 @@ class ContentHash {
   getHash() {
     const { content, size, long, groups, start, end, } = this;
     let group = 0;
-    for (let i = start; i < end; i += 1) {
+    for (let i = start; i <= end; i += 1) {
       const s = i % long;
       let charCode = content.charCodeAt(i);
-      if (charCode === NaN) {
-        charCode = 0;
-      }
       group += charCode * size ** s;
       if (s === long - 1) {
-        groups.push(group);
+        groups.push(group + 1);
         group = 0;
       }
     }

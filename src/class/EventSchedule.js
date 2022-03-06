@@ -5,27 +5,27 @@ import WatchPath from '~/class/WatchPath';
 import PoolSize from '~/class/PoolSize';
 import ProcPool from '~/class/ProcPool';
 import HashFile from '~/class/HashFile';
-import { getPackages, } from '~/lib/plugin';
+import { getPackages, } from '~/lib/package';
 
 class EventSchedule {
   constructor({ priProcs=[], emitter=null, config={}, }) {
     this.pool = [];
     this.emitter = emitter;
     this.priProcs = priProcs;
-    //this.hf = new HashFile({});
+    this.hf = new HashFile({ l: 2, });
     this.size = new PoolSize(config).size;
     this.watchPath = new WatchPath({ emitter, config, });
   }
 
   start() {
-    this.sendPlugins();
+    this.sendPackages();
     this.bindEvent();
     this.watchPath.start();
     this.fillProcPool();
   }
 
   writeData(data) {
-    //console.log(JSON.stringify(data));
+    console.log(JSON.stringify(data));
   }
 
   initSocket() {
@@ -36,9 +36,9 @@ class EventSchedule {
     server.listen(3000);
   }
 
-  sendPlugins() {
+  sendPackages() {
     const plugins = getPackages();
-    const event = 'plugin';
+    const event = 'package';
     this.writeData([event, plugins]);
   }
 
@@ -49,7 +49,8 @@ class EventSchedule {
       procPool.addPriProc(pri, proc);
     });
     procPool.updatePool();
-    this.pool = procPool.getPool().map((proc) => {
+    this.pool = procPool.getPool();
+    return this.pool.map((proc) => {
       proc.start();
       return proc;
     });
@@ -75,10 +76,10 @@ class EventSchedule {
     const { emitter, socket, } = this;
     emitter.on('file', (eventType, location) => {
       if (
-        /^\/.drip\/local\/instance\/\[(\w+)\]:(\w+)$/
-        .test(path.resolve(location))
+        /^\.drip\/local\/instance\/\[(\w+)\]:(\w+)$/
+        .test(path.relative('.', location))
       ) {
-        //const { hf, } = this;
+        const { hf, } = this;
         hf.indexFile(location);
       } else {
         this.cleanProcPool();

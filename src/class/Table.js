@@ -70,7 +70,7 @@ class Table {
   }
 
   selectAll() {
-    const { length, } = this;
+    const { length, total, } = this;
     const c = total / length;
     const ans = [];
     for (let i = 0; i < c; i += 1) {

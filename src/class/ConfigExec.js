@@ -1,11 +1,6 @@
-import { app, BrowserWindow, } from 'electron';
-import { execSync, } from 'child_process';
 import EventEmitter from 'events';
-import path from 'path';
-import os from 'os';
-import EventSchedule from '~/class/EventSchedule';
 import Instance from '~/class/Instance';
-import PoolSize from '~/class/PoolSize';
+import EventSchedule from '~/class/EventSchedule';
 
 class ConfigExec {
   constructor({ config, projectPath, }) {
