@@ -28,6 +28,7 @@ class HashFile {
   constructor({ l=2, }) {
     this.h = {};
     this.l = l;
+    this.ch = new ContentHash({ size: 39, long: 10, });
     this.dbPath = path.join('.drip', 'local', 'db');
     this.iiPath = path.join('.drip', 'local', 'ii');
     this.perpare();
@@ -43,40 +44,46 @@ class HashFile {
     }
   }
 
-  getPart() {
+  getPart(content) {
     const { l, } = this;
-    return 7 * 6 ** l;
+    const p = 6 * 10 ** l;
+    let ans;
+    if (content.length <= p) {
+      ans = content.padEnd(p, ' ');
+    } else {
+      ans = content.substring(0, p);
+    }
+    return ans;
   }
 
   indexFile(location) {
-    const { l, } = this;
+    const { l, ch, } = this;
     const i = [];
     const c = fs.readFileSync(location).toString();
-    let p = c.substring(0, this.getPart());
+    let part = this.getPart(c);
     for (let j = 1; j <= l; j += 1) {
-      p = new ContentHash({ content: p, }).getHash();
-      i.unshift(p);
+      part = ch.getHash(part);
+      i.unshift(part);
     }
     let h;
     for (let j = 0; j < i.length; j += 1) {
-      const k = i[j];
-      h = this.perpareNextLevel(k, h, j + 1);
+      h = this.perpareNextLevel(i[j - 1], i[j], h, j + 1);
     }
     this.perpareInstanceIndex(i.pop(), c);
   }
 
-  perpareNextLevel(c, h=this.h, level) {
+  perpareNextLevel(c1, c2, h=this.h, level) {
     const { db, l, } = this;
     let ans;
     if (level === 1) {
-      this.perpareTable('fi', 7);
+      this.perpareTable('fi', 6);
       const tb = db.selectTable('fi');
-      this.updateIndex(tb, h, c);
+      this.updateIndex(tb, h, c2);
       ans = h;
     } else {
-      this.perpareTable(c, (level - 1) * 6 * 7);
-      const tb = db.selectTable(c);
-      this.updateIndex(tb, h, c);
+      this.perpareTable(c1, 10 ** (level - 1) * 6);
+      const tb = db.selectTable(c1);
+      this.updateIndex(tb, h, c2);
       ans = h;
     }
     return ans;
