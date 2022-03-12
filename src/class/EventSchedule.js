@@ -10,6 +10,7 @@ import { getPackages, } from '~/lib/package';
 class EventSchedule {
   constructor({ priProcs=[], emitter=null, config={}, }) {
     this.pool = [];
+    this.config = config;
     this.emitter = emitter;
     this.priProcs = priProcs;
     this.hf = new HashFile({ l: 2, });
@@ -49,8 +50,7 @@ class EventSchedule {
       procPool.addPriProc(pri, proc);
     });
     procPool.updatePool();
-    this.pool = procPool.getPool();
-    return this.pool.map((proc) => {
+    this.pool = procPool.getPool().map((proc) => {
       proc.start();
       return proc;
     });
@@ -64,9 +64,13 @@ class EventSchedule {
   }
 
   checkFreeMemory() {
-    const { config, } = this;
+    const {
+      core: {
+        minMem,
+      },
+    } = this.config;
     let ans = true;
-    if (os.freemem() / 1024 ** 2 > 500) {
+    if (os.freemem() / 1024 ** 2 > minMem) {
       ans = false;
     }
     return ans;

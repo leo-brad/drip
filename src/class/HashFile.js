@@ -28,7 +28,7 @@ class HashFile {
   constructor({ l=2, }) {
     this.h = {};
     this.l = l;
-    this.ch = new ContentHash({ size: 39, long: 10, });
+    this.ch = new ContentHash();
     this.dbPath = path.join('.drip', 'local', 'db');
     this.iiPath = path.join('.drip', 'local', 'ii');
     this.perpare();
@@ -46,14 +46,8 @@ class HashFile {
 
   getPart(content) {
     const { l, } = this;
-    const p = 6 * 10 ** l;
-    let ans;
-    if (content.length <= p) {
-      ans = content.padEnd(p, ' ');
-    } else {
-      ans = content.substring(0, p);
-    }
-    return ans;
+    const p = 12 * 6 ** l;
+    return content.substring(0, p);
   }
 
   indexFile(location) {
@@ -72,16 +66,19 @@ class HashFile {
     this.perpareInstanceIndex(i.pop(), c);
   }
 
+  findRecord() {
+  }
+
   perpareNextLevel(c1, c2, h=this.h, level) {
     const { db, l, } = this;
     let ans;
     if (level === 1) {
-      this.perpareTable('fi', 6);
+      this.perpareTable('fi', 12);
       const tb = db.selectTable('fi');
       this.updateIndex(tb, h, c2);
       ans = h;
     } else {
-      this.perpareTable(c1, 10 ** (level - 1) * 6);
+      this.perpareTable(c1, 6 ** (level - 1) * 12);
       const tb = db.selectTable(c1);
       this.updateIndex(tb, h, c2);
       ans = h;
