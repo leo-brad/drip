@@ -1,10 +1,13 @@
 import path from 'path';
 import fs from 'fs';
-import nonZeroByteArray from '~/lib/nonZeroByteArray';
-import byteArray from '~/lib/byteArray';
+import * as nonZeroByteArray from '~/lib/nonZeroByteArray';
+import * as byteArray from '~/lib/byteArray';
 
 class Serials {
   constructor(p, n) {
+    if (!fs.existsSync(p)) {
+      fs.mkdirSync(p);
+    }
     this.serialsPath = path.join(p, n);
     this.typePath = path.join(p, n + '-t');
   }
@@ -18,14 +21,14 @@ class Serials {
 
   create(type) {
     const { typePath, serialsPath, } = this;
-    fs.appendFileSync(typePath, JSON.stringify(type));
-    fs.openSync(serialsPath, 'a');
+    fs.writeFileSync(fs.openSync(typePath, 'w'), JSON.stringify(type));
+    fs.openSync(serialsPath, 'w');
   }
 
   read() {
     this.initType();
-    const { typePath, serialsPath, } = this;
-    const buf = fs.readFileSync(typePath);
+    const { typePath, serialsPath, type, } = this;
+    const buf = fs.readFileSync(serialsPath);
     const segments = [];
     let s = 0;
     for (let i = 0; i < buf.length; i += 1) {
@@ -34,8 +37,7 @@ class Serials {
         s = i + 1;
       }
     }
-    segments.push(buf.slice(s, i));
-    const { length, } = type;
+    segments.push(buf.slice(s, buf.length));
     const serial = [];
     let p = 0;
     for (let i = 0; i < segments.length; i += 1) {
@@ -49,7 +51,8 @@ class Serials {
           serial.push(e.toString());
           break;
       }
-      if (p === length) {
+      p += 1;
+      if (p === type.length) {
         p = 0;
       }
     }
@@ -59,15 +62,24 @@ class Serials {
   add(serial) {
     this.initType();
     const { serialsPath, type, } = this;
-    const bytes = [];
+    const pbytes = [];
     for (let i = 0; i < serial.length; i += 1) {
-      bytes.push(serial[i]);
-      if (i !== serial.length) {
-        bytes.push(0);
+      switch (type[i]) {
+        case 'i':
+          pbytes.push(Array.from(nonZeroByteArray.fromInt(serial[i])));
+          break;
+        case 's':
+          pbytes.push(Array.from(Buffer.from(serial[i])));
+      }
+      if (i !== serial.length - 1) {
+        pbytes.push(0);
       }
     }
-    const buf = Buffer.from(bytes.flat());
-    const total = fs.fstatSync(serialsPath).size;
+    const total = fs.lstatSync(serialsPath).size;
+    if (total !== 0) {
+      pbytes.unshift(0);
+    }
+    const buf = Buffer.from(pbytes.flat());
     const { length, path, name, } = this;
     const fd = fs.openSync(serialsPath, 'a');
     fs.writeSync(fd, buf, 0, buf.length, total);
