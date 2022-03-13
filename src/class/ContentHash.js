@@ -20,10 +20,8 @@ class ContentHash {
   getHash(content) {
     const { size, long, } = this;
     const groups = [];
-    const start = 0;
-    const end = Math.ceil(content.length / long) * long;
     let group = 0;
-    for (let i = start; i <= end; i += 1) {
+    for (let i = 0; i <= content.length; i += 1) {
       const s = i % long;
       let charCode = content.charCodeAt(i);
       if (charCode === NaN) {

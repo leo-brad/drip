@@ -1,8 +1,9 @@
 import fs from 'fs';
 import path from 'path';
+import Table from '~/class/Table';
+import Serials from '~/class/Serials';
 import ContentHash from '~/class/ContentHash';
-import Database from '~/class/Database';
-import { fromInt, toInt, } from '~/lib/byteArray';
+import * as nonZeroByteArray from '~/lib/nonZeroByteArray';
 
 function iteratorLastId(idxPath, total, c) {
   let ans = true;
@@ -16,52 +17,31 @@ function iteratorLastId(idxPath, total, c) {
   return ans;
 }
 
-function getHashTable(l) {
-  const h = {};
-  l.forEach((e) => {
-    h[e] = true;
-  });
-  return h;
+function getIntString(i) {
+  let byteArr = nonZeroByteArray.fromInt(i);
+  byteArr.push(0);
+  return Buffer.from(byteArr).toString();
 }
 
 class HashFile {
   constructor({ l=2, }) {
-    this.h = {};
+    this.m = {};
     this.l = l;
     this.ch = new ContentHash();
-    this.dbPath = path.join('.drip', 'local', 'db');
     this.iiPath = path.join('.drip', 'local', 'ii');
-    this.perpare();
   }
 
-  updateIndex(tb, h, c) {
-    if (h === undefined) {
-      h = getHashTable(tb.selectAll());
-    }
-    if (h[c] === undefined) {
-      tb.insert([c]);
-      h[c] = true;
-    }
-  }
-
-  getPart(content) {
-    const { l, } = this;
-    const p = 12 * 6 ** l;
-    return content.substring(0, p);
-  }
-
-  indexFile(location) {
+  indexInstance(location) {
+    this.perpare(location);
     const { l, ch, } = this;
     const i = [];
-    const c = fs.readFileSync(location).toString();
-    let part = this.getPart(c);
+    let c = fs.readFileSync(location).toString();
     for (let j = 1; j <= l; j += 1) {
-      part = ch.getHash(part);
-      i.unshift(part);
+      c = ch.getHash(c);
+      i.unshift(c);
     }
-    let h;
     for (let j = 0; j < i.length; j += 1) {
-      h = this.perpareNextLevel(i[j - 1], i[j], h, j + 1);
+      this.perpareNextLevel(i[j], j + 1);
     }
     this.perpareInstanceIndex(i.pop(), c);
   }
@@ -69,21 +49,16 @@ class HashFile {
   findRecord() {
   }
 
-  perpareNextLevel(c1, c2, h=this.h, level) {
-    const { db, l, } = this;
-    let ans;
-    if (level === 1) {
-      this.perpareTable('fi', 12);
-      const tb = db.selectTable('fi');
-      this.updateIndex(tb, h, c2);
-      ans = h;
-    } else {
-      this.perpareTable(c1, 6 ** (level - 1) * 12);
-      const tb = db.selectTable(c1);
-      this.updateIndex(tb, h, c2);
-      ans = h;
-    }
-    return ans;
+  perpareNextLevel(c, l) {
+    const { pkgPath, m, } = this;
+    this.perpareSerials(
+      path.join(pkgPath, 'l' + getIntString(l) + String(id)),
+      c.length.toString(), ['i', 'i'], [c.length, id],
+    );
+    this.perpareSerials(
+      path.join(pkgPath, 'l' + getIntString(l) + String(id)),
+      c.length.toString(), ['i', 'i'], [c.length, id],
+    );
   }
 
   perpareInstanceIndex(h, c) {
@@ -105,20 +80,48 @@ class HashFile {
     }
   }
 
-  perpare() {
-    this.perpareDb();
-  }
-
-  perpareDb() {
-    const { dbPath, } = this;
-    this.db = new Database({ dbPath, });
-  }
-
-  perpareTable(name, size) {
-    const { db, } = this;
-    if (!db.checkTable(name)) {
-      db.createTable(name, [['s', size]]);
+  perpare(location) {
+    const { iiPath, } = this;
+    const [_, pkg] = location.match(/^\.drip\/local\/instance\/\[(\w+)\]:(\w+)$/);
+    const pkgPath = path.join(iiPath, pkg);
+    if (!fs.existsSync(pkgPath)) {
+      fs.mkdirSync(pkgPath);
     }
+    this.pkgPath = pkgPath;
+  }
+
+  perpareTable(path, name, specs) {
+    const { pkgPath, m, } = this;
+    const tb = new Table(pkgPath, name);
+    if (!tb.check()) {
+      serials.create(specs);
+    }
+    const strip = this.getStrip(tb, name);
+  }
+
+  perpareSerials(path, name, type) {
+    const { pkgPath, m, } = this;
+    const serials = new Serials(pkgPath, name);
+    if (!serials.check()) {
+      serials.create(type);
+    }
+    const serial = this.getSerial(serials, name);
+  }
+
+  getSerial(serials, name) {
+    const { m, } = this;
+    if (m[name] === undefined) {
+      m[name] = serials.read();
+    }
+    return m[name];
+  }
+
+  getStrip(tb, name) {
+    const { m, } = this;
+    if (m[name] === undefined) {
+      m[name] = serials.selectAll();
+    }
+    return m[name];
   }
 }
 

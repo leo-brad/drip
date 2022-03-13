@@ -3,17 +3,53 @@ import path from 'path';
 import fs from 'fs';
 
 class Table {
-  constructor({ name, dbPath, }) {
-    this.dbPath = dbPath;
+  constructor(path, name) {
+    this.path = path;
     this.name = name;
-    const lengthFd = fs.openSync(path.join(dbPath, name + '-l'), 'r');
+    this.specsPath = path.join(path, name + '-s');
+    this.tbPath = path.join(path, name);
+    this.lengthPath = path.join(path, name + '-l');
+    this.initMem();
+  }
+
+  initMem() {
+    const { lengthPath, specsPath, } = this;
+    const lengthFd = fs.openSync(lengthPath, 'r');
     const length = Buffer.alloc(fs.fstatSync(lengthFd).size);
     fs.readSync(lengthFd, length, 0, length.length, 0);
     this.length = toInt(length);
-    this.specs = JSON.parse(fs.readFileSync(path.join(dbPath, name + '-s')));
-    const tbPath = path.join(dbPath, name);
+    this.specs = JSON.parse(fs.readFileSync(specsPath));
     this.total = fs.fstatSync(fs.openSync(tbPath, 'r')).size;
-    this.tbPath = tbPath;
+  }
+
+  create(name, specs) {
+    const { tbPath, specsPath, lengthPath, } = this;
+    fs.appendFileSync(specsPath, JSON.stringify(specs));
+    let length = 0;
+    specs.forEach((s) => {
+      const [_, l] = s;
+      length += l;
+    });
+    fs.appendFileSync(
+      lengthPath,
+      Buffer.from(fromInt(length)),
+    );
+    fs.openSync(tbPath, 'a');
+  }
+
+  check(name) {
+    const { tbPath, specsPath, lengthPath, } = this;
+    let ans = true;
+    if (!fs.existsSync(tbPath)) {
+      ans = false;
+    }
+    if (!fs.existsSync(specsPath)) {
+      ans = false;
+    }
+    if (!fs.existsSync(lengthPath)) {
+      ans = false;
+    }
+    return ans;
   }
 
   fromStrip(strip) {

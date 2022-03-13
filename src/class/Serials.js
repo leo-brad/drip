@@ -84,6 +84,18 @@ class Serials {
     const fd = fs.openSync(serialsPath, 'a');
     fs.writeSync(fd, buf, 0, buf.length, total);
   }
+
+  check() {
+    const { serialsPath, typePath, } = this;
+    let ans = true;
+    if (!fs.existsSync(serialsPath)) {
+      ans = false;
+    }
+    if (!fs.existsSync(typePath)) {
+      ans = false;
+    }
+    return ans;
+  }
 }
 
 export default Serials;
