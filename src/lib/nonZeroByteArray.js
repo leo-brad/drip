@@ -1,4 +1,4 @@
-export function fromInt(n, l) {
+export function fromInt(n) {
   const ans = [];
   if (n > 254) {
     while (n > 255) {

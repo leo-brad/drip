@@ -4,9 +4,9 @@ import EventSchedule from '~/class/EventSchedule';
 
 class ConfigExec {
   constructor({ config, projectPath, }) {
+    process.chdir(projectPath);
     this.config = config;
     this.emitter = new EventEmitter();
-    process.chdir(projectPath);
   }
 
   start() {
