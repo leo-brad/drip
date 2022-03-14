@@ -1,4 +1,4 @@
-export function fromInt(n, l) {
+export function fromInt(n) {
   const ans = [];
   if (n > 255) {
     while (n > 256) {
@@ -8,9 +8,6 @@ export function fromInt(n, l) {
     }
   }
   ans.push(n);
-  while (ans.length < l) {
-    ans.unshift(0);
-  }
   return ans;
 }
 

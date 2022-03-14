@@ -1,5 +1,5 @@
 class ContentHash {
-  constructor({ size=256, long=6, start, end, }) {
+  constructor({ size=256, long=6, } = {}) {
     this.size = size;
     this.long = long;
   }

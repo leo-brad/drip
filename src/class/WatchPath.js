@@ -2,7 +2,7 @@ import path from 'path';
 import fs from 'fs';
 
 class WatchPath {
-  constructor({ emitter, config={}, }) {
+  constructor(emitter, config) {
     this.emitter = emitter;
     this.config = config;
     this.events = [];

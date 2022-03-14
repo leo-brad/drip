@@ -1,10 +1,10 @@
 import path from 'path';
 import net from 'net';
 import os from 'os';
+import InstanceIndex from '~/class/InstanceIndex';
 import WatchPath from '~/class/WatchPath';
 import PoolSize from '~/class/PoolSize';
 import ProcPool from '~/class/ProcPool';
-import HashFile from '~/class/HashFile';
 import { getPackages, } from '~/lib/package';
 
 class EventSchedule {
@@ -13,9 +13,9 @@ class EventSchedule {
     this.config = config;
     this.emitter = emitter;
     this.priProcs = priProcs;
-    this.hf = new HashFile({ l: 2, });
+    this.ii = new InstanceIndex(2);
     this.size = new PoolSize(config).size;
-    this.watchPath = new WatchPath({ emitter, config, });
+    this.watchPath = new WatchPath(emitter, config);
   }
 
   start() {
@@ -83,8 +83,8 @@ class EventSchedule {
         /^\.drip\/local\/instance\/\[(\w+)\]:(\w+)$/
         .test(path.relative('.', location))
       ) {
-        const { hf, } = this;
-        hf.indexFile(location);
+        const { ii, } = this;
+        ii.indexInstance(location);
       } else {
         this.cleanProcPool();
         this.fillProcPool(location);

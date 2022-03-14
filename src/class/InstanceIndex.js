@@ -5,6 +5,16 @@ import Serials from '~/class/Serials';
 import ContentHash from '~/class/ContentHash';
 import * as nonZeroByteArray from '~/lib/nonZeroByteArray';
 import * as byteArray from '~/lib/byteArray';
+import * as utf8Array from '~/lib/utf8Array';
+
+function getSet(serials) {
+  const set = new Set();
+  serials.forEach((e) => {
+    const [k] = e;
+    set.add(k);
+  });
+  return set;
+}
 
 function iteratorLastId(idxPath, total, c) {
   let ans = true;
@@ -18,23 +28,23 @@ function iteratorLastId(idxPath, total, c) {
   return ans;
 }
 
-function getIntStringWitnEnd(i) {
-  let byteArr = nonZeroByteArray.fromInt(i);
-  byteArr.push(0);
+function getIntStringCouple(i1, i2) {
+  let byteArr = utf8Array.fromInt(i1);
+  byteArr.push(32);
+  byteArr.concat(utf8Array.fromInt(i2));
   return Buffer.from(byteArr).toString();
 }
 
-function getIntString(i) {
-  let byteArr = nonZeroByteArray.fromInt(i);
-  return Buffer.from(byteArr).toString();
+function getPathNameWithId(type, l, id) {
+  return type + getIntStringCouple(l, id);
 }
 
 class InstanceIndex {
-  constructor({ l=2, }) {
+  constructor(l) {
     this.m = {};
     this.h = {};
     this.l = l;
-    this.ch = new ContentHash();
+    this.ch = new ContentHash({});
     this.iiPath = path.join('.drip', 'local', 'ii');
   }
 
@@ -56,18 +66,20 @@ class InstanceIndex {
   perpareNextLevel(c, l) {
     const { pkgPath, m, id, } = this;
     this.perpareSerials(
-      path.join(pkgPath, 'l' + getIntString(l)),
-      c.length.toString(), ['i', 'i'], [c.length, this.getId('l', l, c)],
+      path.join(pkgPath, getPathNameWithId('l', l, this.getId('h', l))),
+      c.length.toString(), ['i', 'i'], [c.length, this.getId('l', l, c)], l,
     );
     this.perpareSerials(
-      path.join(pkgPath, 'h' + getIntString(l)),
-      c, ['h', 'i'], [c, this.getId('h', l, c)],
+      path.join(pkgPath, getPathNameWithId('h', l, this.getId('l', l))),
+      c, ['h', 'i'], [c, this.getId('h', l + 1, c)], l,
     );
   }
 
-  perpareLastLevel(c) {
-    const { iiPath, } = this;
-    const idxPath = path.resolve(path.join(iiPath, h));
+  perpareLastLevel(h) {
+    const { pkgPath, l, } = this;
+    const idxPath = path.join(
+      pkgPath, getPathNameWithId('h', l + 1, this.getId('l', l + 1, c))
+    );
     const totalPath = path.join(idxPath, 't');
     if (!fs.existsSync(idxPath)) {
       fs.mkdirSync(idxPath, { recursive: true, });
@@ -86,7 +98,9 @@ class InstanceIndex {
 
   perpare(location) {
     const { iiPath, } = this;
-    const [_, pkg] = location.match(/^\.drip\/local\/instance\/\[(\w+)\]:(\w+)$/);
+    const [_, pkg] = path.relative('.', location).match(
+      /^\.drip\/local\/instance\/\[(\w+)\]:(\w+)$/
+    );
     const pkgPath = path.join(iiPath, pkg);
     if (!fs.existsSync(pkgPath)) {
       fs.mkdirSync(pkgPath);
@@ -94,17 +108,18 @@ class InstanceIndex {
     this.pkgPath = pkgPath;
   }
 
-  getIdPath(type, l, h) {
+  getIdPath(type, l) {
+    const { pkgPath, } = this;
     let idPath;
     switch (type) {
       case 'l':
         idPath = path.join(
-          pkgPath, 'l' + Buffer.from(byteArray.fromInt(l)).toString(),
+          pkgPath, 'l' + Buffer.from(utf8Array.fromInt(l + 1)).toString(),
         );
         break;
       case 'h':
         idPath = path.join(
-          pkgPath, 'l' + c,
+          pkgPath, 'h' + Buffer.from(utf8Array.fromInt(l + 1)).toString(),
         );
         break;
     }
@@ -113,7 +128,7 @@ class InstanceIndex {
 
   getId(type, l, h) {
     const { pkgPath, } = this;
-    const idPath = this.getIdPath(type, l, h);
+    const idPath = this.getIdPath(type, l);
     let id;
     if (!fs.existsSync(idPath)) {
       const fd = fs.openSync(idPath, 'w');
@@ -127,38 +142,24 @@ class InstanceIndex {
     return id;
   }
 
-  incId(type, l, h) {
-    const idPath = this.getIdPath(type, l, h);
+  incId(type, l) {
+    const { pkgPath, } = this;
+    const idPath = path.join(pkgPath, this.getIdPath(type, l));
     const fd = fs.openSync(idPath, 'rw');
     let id = byteArray.toInt(fs.readFileSync(fd));
     id += 1;
     fs.writeFileSync(fd, byteArray.fromInt(id));
   }
 
-  perpareSerials(path, name, type, serial, id) {
-    if (id === undefined) {
-      id = '';
-    } else {
-      id = String(id)
-    }
+  perpareSerials(path, name, type, serial, id, l) {
     const { m, } = this;
-    let serials = new Serials(path + id, name);
+    let serials = new Serials(path, name);
     if (!serials.check()) {
-      this.incId();
-      const newId = this.getId('h', l, c);
-      serialis = new Serials(path + newId)
+      this.incId('h', l);
+      const newId = this.getId('h', l);
+      serialis = new Serials();
       serials.create(type);
     }
-    const serial = this.getSerial(name);
-    this.updateSerials(serials, serial, name);
-    const { m, } = this;
-    let serials = new Serials(path + id, name);
-    if (!serials.check()) {
-      const newId = this.getId('h', l, c);
-      serialis = new Serials(path + newId)
-      serials.create(type);
-    }
-    const serial = this.getSerial(name);
     this.updateSerials(serials, serial, name);
   }
 
@@ -167,10 +168,11 @@ class InstanceIndex {
     if (!h[name].has(serial)) {
       serials.add(serial);
       this.hashSerial(serial, name);
+      this.memSerial(name);
     }
   }
 
-  getSerial(name) {
+  memSerial(name) {
     const { m, } = this;
     if (m[name] === undefined) {
       m[name] = serials;
@@ -179,9 +181,9 @@ class InstanceIndex {
   }
 
   hashSerial(serials, name) {
-    const { m, h, } = this;
-    if (m[name] === undefined) {
-      m[name] = serials;
+    const { h, } = this;
+    if (h[name] === undefined) {
+      h[name] = getSet(serials);
     }
     return serial;
   }
