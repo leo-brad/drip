@@ -38,7 +38,8 @@ class Serials {
       }
     }
     segments.push(buf.slice(s, buf.length));
-    const serial = [];
+    const serials = [];
+    let serial = [];
     let p = 0;
     for (let i = 0; i < segments.length; i += 1) {
       const t = type[p];
@@ -51,12 +52,15 @@ class Serials {
           serial.push(e.toString());
           break;
       }
-      p += 1;
-      if (p === type.length) {
+      if (p === type.length - 1) {
+        serials.push(serial);
+        serial = [];
         p = 0;
+      } else {
+        p += 1;
       }
     }
-    return serial;
+    return serials;
   }
 
   add(serial) {

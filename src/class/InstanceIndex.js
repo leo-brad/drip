@@ -7,9 +7,9 @@ import * as nonZeroByteArray from '~/lib/nonZeroByteArray';
 import * as byteArray from '~/lib/byteArray';
 import * as utf8Array from '~/lib/utf8Array';
 
-function getSet(serials) {
+function getSet(serial) {
   const set = new Set();
-  serials.forEach((e) => {
+  serial.forEach((e) => {
     const [k] = e;
     set.add(k);
   });
@@ -66,24 +66,24 @@ class InstanceIndex {
   perpareNextLevel(c, l) {
     const { pkgPath, m, id, } = this;
     this.perpareSerials(
-      path.join(pkgPath, getPathNameWithId('l', l, this.getId('h', l))),
-      c.length.toString(), ['i', 'i'], [c.length, this.getId('l', l, c)], l,
+      'l', Buffer.from(utf8Array.fromInt(this.getId('l', l))).toString(),
+      ['i', 'i'], [c.length, this.getId('h', l)], l,
     );
     this.perpareSerials(
-      path.join(pkgPath, getPathNameWithId('h', l, this.getId('l', l))),
-      c, ['h', 'i'], [c, this.getId('h', l + 1, c)], l,
+      'h', Buffer.from(utf8Array.fromInt(this.getId('h', l))).toString(),
+      ['h', 'i'], [c, this.getId('h', l + 1)], l,
     );
   }
 
-  perpareLastLevel(h) {
+  perpareLastLevel(c) {
     const { pkgPath, l, } = this;
     const idxPath = path.join(
-      pkgPath, getPathNameWithId('h', l + 1, this.getId('l', l + 1, c))
+      pkgPath, getPathNameWithId('h', l + 1, this.getId('l', l + 1))
     );
     const totalPath = path.join(idxPath, 't');
     if (!fs.existsSync(idxPath)) {
       fs.mkdirSync(idxPath, { recursive: true, });
-      fs.appendFileSync(totalPath, Buffer.from(fromInt(0)));
+      fs.appendFileSync(totalPath, Buffer.from(byteArray.fromInt(0)));
       const idPath = path.join(idxPath, String(0));
       fs.appendFileSync(idPath, c);
     } else {
@@ -126,38 +126,38 @@ class InstanceIndex {
     return idPath;
   }
 
-  getId(type, l, h) {
+  getId(type, l) {
     const { pkgPath, } = this;
     const idPath = this.getIdPath(type, l);
     let id;
     if (!fs.existsSync(idPath)) {
       const fd = fs.openSync(idPath, 'w');
-      const buf = Buffer.from(byteArray.fromInt(0));
+      const buf = Buffer.from(utf8Array.fromInt(32));
       fs.writeFileSync(fd, buf);
       id = 0;
     } else {
       const fd = fs.openSync(idPath, 'r');
-      id = byteArray.toInt(fs.readFileSync(fd));
+      id = utf8Array.toInt(fs.readFileSync(fd));
     }
     return id;
   }
 
   incId(type, l) {
-    const { pkgPath, } = this;
-    const idPath = path.join(pkgPath, this.getIdPath(type, l));
-    const fd = fs.openSync(idPath, 'rw');
-    let id = byteArray.toInt(fs.readFileSync(fd));
+    const idPath = this.getIdPath(type, l);
+    const fd = fs.openSync(idPath, 'r+');
+    let id = utf8Array.toInt(fs.readFileSync(fd));
     id += 1;
-    fs.writeFileSync(fd, byteArray.fromInt(id));
+    fs.writeFileSync(fd, Buffer.from(utf8Array.fromInt(id)));
   }
 
-  perpareSerials(path, name, type, serial, id, l) {
-    const { m, } = this;
-    let serials = new Serials(path, name);
+  perpareSerials(t, name, type, serial, l) {
+    const { pkgPath, m, } = this;
+    let p = path.join(pkgPath, getPathNameWithId(t, l, this.getId(t, l)));
+    let serials = new Serials(p, name);
     if (!serials.check()) {
-      this.incId('h', l);
-      const newId = this.getId('h', l);
-      serialis = new Serials();
+      this.incId(t, l);
+      p = path.join(pkgPath, getPathNameWithId(t, l, this.getId(t, l)));
+      serials = new Serials(p, name);
       serials.create(type);
     }
     this.updateSerials(serials, serial, name);
@@ -165,27 +165,27 @@ class InstanceIndex {
 
   updateSerials(serials, serial, name ) {
     const { h, } = this;
-    if (!h[name].has(serial)) {
+    if (!h[name] || (h[name] && !h[name].has(serial))) {
       serials.add(serial);
-      this.hashSerial(serial, name);
-      this.memSerial(name);
+      const newSerial = serials.read();
+      this.hashSerial(newSerial, name);
+      this.memSerial(newSerial, name);
     }
   }
 
-  memSerial(name) {
+  memSerial(serial, name) {
     const { m, } = this;
     if (m[name] === undefined) {
-      m[name] = serials;
+      m[name] = serial;
     }
     return m[name];
   }
 
-  hashSerial(serials, name) {
+  hashSerial(serial, name) {
     const { h, } = this;
     if (h[name] === undefined) {
-      h[name] = getSet(serials);
+      h[name] = getSet(serial);
     }
-    return serial;
   }
 }
 
