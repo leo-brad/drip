@@ -21,12 +21,9 @@ class ContentHash {
     const { size, long, } = this;
     const groups = [];
     let group = 0;
-    for (let i = 0; i <= content.length; i += 1) {
+    for (let i = 0; i < content.length; i += 1) {
       const s = i % long;
-      let charCode = content.charCodeAt(i);
-      if (charCode === NaN) {
-        charCode = 0;
-      }
+      const charCode = content.charCodeAt(i);
       group += charCode * size ** s;
       if (s === long - 1) {
         groups.push(group);

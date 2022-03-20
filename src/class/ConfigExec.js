@@ -12,7 +12,7 @@ class ConfigExec {
   start() {
     const { emitter, config, projectPath, } = this;
     const priProcs = new Instance(config, emitter).getPriProcs();
-    new EventSchedule({ emitter, config, priProcs, }).start();
+    new EventSchedule(priProcs, emitter, config).start();
   }
 }
 

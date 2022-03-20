@@ -7,10 +7,10 @@ import * as nonZeroByteArray from '~/lib/nonZeroByteArray';
 import * as byteArray from '~/lib/byteArray';
 import * as utf8Array from '~/lib/utf8Array';
 
-function getHashTable(serial) {
+function getHashTable(serial, i) {
   const hashTable = {};
   serial.forEach((e) => {
-    const [k] = e;
+    const k= e[i];
     hashTable[k] = true;
   });
   return hashTable;
@@ -35,17 +35,29 @@ function getIntStringCouple(i1, i2) {
   return Buffer.from(byteArr).toString();
 }
 
-function getPathNameWithId(type, l, id) {
-  return type + getIntStringCouple(l, id);
-}
-
 class InstanceIndex {
   constructor(l) {
     this.m = {};
     this.h = {};
     this.l = l;
-    this.ch = new ContentHash({});
+    this.ch = new ContentHash();
     this.iiPath = path.join('.drip', 'local', 'ii');
+  }
+
+  getName(t, l) {
+    switch (t) {
+      case 'l':
+        return Buffer.from(utf8Array.fromInt(this.getId('l', l))).toString();
+      case 'h':
+        return Buffer.from(utf8Array.fromInt(this.getId('h', l))).toString();
+    }
+  }
+
+  getPathNameWithId(type, l, id) {
+    if (id === undefined) {
+      id = this.getId(type, l);
+    }
+    return type + getIntStringCouple(l, id);
   }
 
   indexInstance(location) {
@@ -58,11 +70,10 @@ class InstanceIndex {
       hash = ch.getHash(hash);
       hashs.unshift(hash);
     }
-    console.log('hashs', hashs);
     for (let i = 0; i < hashs.length; i += 1) {
       this.perpareNextLevel(hashs[i], i + 1);
     }
-    this.perpareLastLevel(content);
+    this.perpareLastLevel(hashs[hashs.length - 1], content);
   }
 
   perpareNextLevel(c, l) {
@@ -73,24 +84,14 @@ class InstanceIndex {
     );
     this.perpareSerials(
       'h', Buffer.from(utf8Array.fromInt(this.getId('h', l))).toString(),
-      ['s', 'i'], [c, this.getId('h', l + 1)], l,
+      ['s', 'i'], [c, this.getId('l', l + 1)], l,
     );
   }
 
-  getName(t, l) {
-    switch (t) {
-      case 'l':
-        return Buffer.from(utf8Array.fromInt(this.getId('l', l))).toString();
-      case 'h':
-        return Buffer.from(utf8Array.fromInt(this.getId('h', l))).toString();
-    }
-  }
-
-  perpareLastLevel(c) {
+  perpareLastLevel(h, c) {
     const { pkgPath, l, } = this;
-    const idxPath = path.join(
-      pkgPath, getPathNameWithId('h', l + 1, this.getId('l', l + 1))
-    );
+    const id = this.incLastId(h);
+    const idxPath = path.join(pkgPath, this.getPathNameWithId('l', l + 2, id));
     const totalPath = path.join(idxPath, 't');
     if (!fs.existsSync(idxPath)) {
       fs.mkdirSync(idxPath, { recursive: true, });
@@ -107,6 +108,32 @@ class InstanceIndex {
         );
       }
     }
+  }
+
+  incLastId(hash) {
+    const { l, h, } = this;
+    this.perpareSerials(
+      'l', Buffer.from(utf8Array.fromInt(this.getId('l', l + 2))).toString(),
+      ['i'], [hash.length], l + 2,
+    );
+    const name = Buffer.from(utf8Array.fromInt(this.getId('h', l + 1))).toString();
+    const serials = this.getSerials('h', l + 1, name);
+    const pn = this.getPathNameWithId('l', l + 2);
+    let s;
+    console.log('h[pn]', h[pn]);
+    //if (!h[pn]) {
+      //s = this.readSerials(serials, 'h', l + 1);
+      //h[pn] = getHashTable(s, 1);
+      //console.log('s', s);
+    //}
+    if (!h[pn][hash.length]) {
+      serials.add(serial);
+      s = this.readSerials(serials, 'l', l + 2);
+      console.log('s', s);
+      h[pn][hash.length] = true;
+    }
+    console.log('s', s);
+    return s.find(e => e === hash.length);
   }
 
   perpare(location) {
@@ -136,24 +163,20 @@ class InstanceIndex {
         );
         break;
     }
+    if (!fs.existsSync(idPath)) {
+      const fd = fs.openSync(idPath, 'w');
+      const buf = Buffer.from(utf8Array.fromInt(0));
+      fs.writeFileSync(fd, buf);
+    }
     return idPath;
   }
 
   getId(type, l) {
     const { pkgPath, } = this;
     const idPath = this.getIdPath(type, l);
-    let id;
-    if (!fs.existsSync(idPath)) {
-      const fd = fs.openSync(idPath, 'w');
-      const buf = Buffer.from(utf8Array.fromInt(0));
-      fs.writeFileSync(fd, buf);
-      id = 0;
-    } else {
-      const fd = fs.openSync(idPath, 'r');
-      const buf = fs.readFileSync(fd);
-      id = utf8Array.toInt(buf);
-    }
-    return id;
+    const fd = fs.openSync(idPath, 'r');
+    const buf = fs.readFileSync(fd);
+    return utf8Array.toInt(buf);
   }
 
   incId(type, l) {
@@ -166,8 +189,8 @@ class InstanceIndex {
 
   getSerials(t, l, name) {
     const { pkgPath, } = this;
-    const pn = getPathNameWithId(t, l, this.getId(t, l));
-    const p = path.join(pkgPath, getPathNameWithId(t, l, this.getId(t, l)));
+    const pn = this.getPathNameWithId(t, l);
+    const p = path.join(pkgPath, this.getPathNameWithId(t, l));
     let serials = new Serials(p, name);
     return serials;
   }
@@ -176,20 +199,15 @@ class InstanceIndex {
     const { pkgPath, m, } = this;
     let serials = this.getSerials(t, l, name);
     if (!serials.check()) {
-      console.log(1);
       this.createSerials(t, l, type, name);
       serials = this.getSerials(t, l, name);
       this.addSerials(serials, serial, t, l);
     } else {
       serials = this.getSerials(t, l, name);
       const s = this.readSerials(serials, t, l);
-      console.log('serials', serials);
-      console.log('s', s);
-      console.log('serial', serial);
       if (s[0][0] === serial[0]) {
         this.addSerials(serials, serial, t, l);
       } else {
-        console.log(3);
         this.incId(t, l);
         this.createSerials(t, l, type);
       }
@@ -201,36 +219,50 @@ class InstanceIndex {
     if (name === undefined) {
       name = Buffer.from(utf8Array.fromInt(this.getId('l', l))).toString();
     }
-    const pn = getPathNameWithId(t, l, this.getId(t, l));
+    const pn = this.getPathNameWithId(t, l);
     const p = path.join(pkgPath, pn);
     const serials = new Serials(p, name);
     serials.create(type);
   }
 
   addSerials(serials, serial, t, l) {
-    const pn = getPathNameWithId(t, l, this.getId(t, l));
+    const pn = this.getPathNameWithId(t, l);
     const { h, } = this;
     if (!h[pn]) {
       const s = this.readSerials(serials, t, l);
-      this.hashSerial(s, pn);
+      this.hashSerial(s, pn, 0);
     }
     if (!h[pn][serial[0]]) {
-      console.log(2);
       serials.add(serial);
       this.updateSerials(serials, t, l);
       const newSerial = this.readSerials(serials, t, l);
-      this.hashSerial(newSerial, pn);
+      this.hashSerial(newSerial, pn, 0);
+    }
+  }
+
+  addLastSerials(serials, serial, t, l) {
+    const pn = this.getPathNameWithId(t, l);
+    const { h, } = this;
+    if (!h[pn]) {
+      const s = this.readSerials(serials, t, l);
+      this.hashSerial(s, pn, 1);
+    }
+    if (!h[pn][serial[1]]) {
+      serials.add(serial);
+      this.updateSerials(serials, t, l);
+      const newSerial = this.readSerials(serials, t, l);
+      this.hashSerial(newSerial, pn, 1);
     }
   }
 
   updateSerials(serials, t, l) {
-    const pn = getPathNameWithId(t, l, this.getId(t, l));
+    const pn = this.getPathNameWithId(t, l);
     const { m, } = this;
     m[pn] = serials.read();
   }
 
   readSerials(serials, t, l) {
-    const pn = getPathNameWithId(t, l, this.getId(t, l));
+    const pn = this.getPathNameWithId(t, l);
     const { m, } = this;
     if (m[pn] === undefined) {
       m[pn] = serials.read();
@@ -238,9 +270,9 @@ class InstanceIndex {
     return m[pn];
   }
 
-  hashSerial(serial, pn) {
+  hashSerial(serial, pn, i) {
     const { h, } = this;
-    h[pn] = getHashTable(serial);
+    h[pn] = getHashTable(serial, i);
   }
 }
 

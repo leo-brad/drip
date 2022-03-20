@@ -8,7 +8,7 @@ import ProcPool from '~/class/ProcPool';
 import { getPackages, } from '~/lib/package';
 
 class EventSchedule {
-  constructor({ priProcs=[], emitter=null, config={}, }) {
+  constructor(priProcs, emitter, config,) {
     this.pool = [];
     this.config = config;
     this.emitter = emitter;
