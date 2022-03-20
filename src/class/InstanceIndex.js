@@ -31,7 +31,7 @@ function iteratorLastId(idxPath, total, c) {
 function getIntStringCouple(i1, i2) {
   let byteArr = utf8Array.fromInt(i1);
   byteArr.push(32);
-  byteArr.concat(utf8Array.fromInt(i2));
+  byteArr = byteArr.concat(utf8Array.fromInt(i2));
   return Buffer.from(byteArr).toString();
 }
 
@@ -91,11 +91,11 @@ class InstanceIndex {
   perpareLastLevel(h, c) {
     const { pkgPath, l, } = this;
     const id = this.incLastId(h);
-    const idxPath = path.join(pkgPath, this.getPathNameWithId('l', l + 2, id));
+    const idxPath = path.join(pkgPath, this.getPathNameWithId('c', l + 2, id));
     const totalPath = path.join(idxPath, 't');
     if (!fs.existsSync(idxPath)) {
       fs.mkdirSync(idxPath, { recursive: true, });
-      fs.appendFileSync(totalPath, Buffer.from(byteArray.fromInt(0)));
+      fs.writeFileSync(fs.openSync(totalPath, 'w'), Buffer.from(byteArray.fromInt(0)));
       const idPath = path.join(idxPath, String(0));
       fs.appendFileSync(idPath, c);
     } else {
@@ -112,28 +112,28 @@ class InstanceIndex {
 
   incLastId(hash) {
     const { l, h, } = this;
-    this.perpareSerials(
-      'l', Buffer.from(utf8Array.fromInt(this.getId('l', l + 2))).toString(),
-      ['i'], [hash.length], l + 2,
-    );
-    const name = Buffer.from(utf8Array.fromInt(this.getId('h', l + 1))).toString();
-    const serials = this.getSerials('h', l + 1, name);
+    const name = Buffer.from(utf8Array.fromInt(this.getId('l', l + 2))).toString();
+    const serials = this.getSerials('l', l + 2, name);
+    if (!serials.check()) {
+      serials.create(['i']);
+      serials.add([hash.length]);
+    }
     const pn = this.getPathNameWithId('l', l + 2);
     let s;
-    console.log('h[pn]', h[pn]);
-    //if (!h[pn]) {
-      //s = this.readSerials(serials, 'h', l + 1);
-      //h[pn] = getHashTable(s, 1);
-      //console.log('s', s);
-    //}
-    if (!h[pn][hash.length]) {
-      serials.add(serial);
+    if (!h[pn]) {
       s = this.readSerials(serials, 'l', l + 2);
-      console.log('s', s);
-      h[pn][hash.length] = true;
+      this.hashSerial(s, pn, 0);
     }
-    console.log('s', s);
-    return s.find(e => e === hash.length);
+    if (!h[pn][hash.length]) {
+      serials.add([hash.length]);
+      this.updateSerials(serials, 'l', l + 2)
+      s = this.readSerials(serials, 'l', l + 2);
+      h[pn][hash.length] = true;
+    } else {
+      s = serials.read();
+      s = this.readSerials(serials, 'l', l + 2);
+    }
+    return s.findIndex(e => e[0] === hash.length);
   }
 
   perpare(location) {

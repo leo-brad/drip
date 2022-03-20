@@ -6,7 +6,7 @@
   "license": "MIT",
   "description": "A gui for drip.",
   "scripts": {
-    "run": "yarn run build && node dist/index.js '{\"core\":{\"interval\":\"5000\",\"adjust\":\"0\",\"ignores\":[\".drip/local/\",\".git/\",\".gitkeep\"],\"plugins\":[\"shell\"]}}' '/tmp/example/'",
+    "run": "yarn run build && node dist/index.js '{\"core\":{\"interval\":\"0\",\"adjust\":\"0\",\"ignores\":[\".drip/local/\",\".git/\",\".gitkeep\"],\"plugins\":[\"shell\"]}}' '/tmp/example/'",
     "lint": "eslint ./src ",
     "build": "babel src/ --out-dir dist"
   },
