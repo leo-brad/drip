@@ -96,7 +96,6 @@ class Serials {
       ans = false;
     }
     if (!fs.existsSync(typePath)) {
-      ans = false;
     }
     return ans;
   }

@@ -10,7 +10,7 @@ class ContentHash {
     for (let i = 1; i <= long; i += 1) {
       r += size ** i;
     }
-    if (r <= Number.MAX_SAFE_INTEGER) {
+    if (r <= Number.MAX_SAFE_INTEGER + 32) {
       return true;
     } else {
       return false;
@@ -33,7 +33,7 @@ class ContentHash {
         group = 0;
       }
     }
-    return groups.map((g) => String.fromCharCode(g % (2 ** 16) + 1)).join('');
+    return groups.map((g) => String.fromCharCode(g % (2 ** 16) + 32)).join('');
   }
 }
 
