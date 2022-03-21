@@ -183,7 +183,7 @@ class InstanceIndex {
     const idPath = this.getIdPath(type, l);
     const fd = fs.openSync(idPath, 'r+');
     let id = utf8Array.toInt(fs.readFileSync(fd));
-    id += 1;
+    id += 1n;
     fs.writeFileSync(fd, Buffer.from(utf8Array.fromInt(id)));
   }
 
