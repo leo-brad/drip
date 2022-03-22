@@ -74,6 +74,7 @@ class Serials {
           break;
         case 's':
           pbytes.push(Array.from(Buffer.from(serial[i])));
+          break;
       }
       if (i !== serial.length - 1) {
         pbytes.push(0);
@@ -96,6 +97,7 @@ class Serials {
       ans = false;
     }
     if (!fs.existsSync(typePath)) {
+      ans = false;
     }
     return ans;
   }

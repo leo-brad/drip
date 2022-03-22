@@ -79,11 +79,11 @@ class InstanceIndex {
   perpareNextLevel(c, l) {
     const { pkgPath, m, id, } = this;
     this.perpareSerials(
-      'l', Buffer.from(utf8Array.fromInt(this.getId('l', l))).toString(),
-      ['i', 'i'], [c.length, this.getId('h', l)], l,
+      'l', this.getName('l', l),
+      ['i', 'i'], [BigInt(c.length), this.getId('h', l)], l,
     );
     this.perpareSerials(
-      'h', Buffer.from(utf8Array.fromInt(this.getId('h', l))).toString(),
+      'h', this.getName('h', l),
       ['s', 'i'], [c, this.getId('l', l + 1)], l,
     );
   }
@@ -101,10 +101,10 @@ class InstanceIndex {
     } else {
       const total = byteArray.toInt(fs.readFileSync(totalPath));
       if (iteratorLastId(idxPath, total, c)) {
-        const idPath = path.join(idxPath, String(total + 1));
+        const idPath = path.join(idxPath, String(total + 1n));
         fs.appendFileSync(idPath, c);
         fs.writeFileSync(
-          fs.openSync(totalPath, 'w'), Buffer.from(byteArray.fromInt(total + 1))
+          fs.openSync(totalPath, 'w'), Buffer.from(byteArray.fromInt(total + 1n))
         );
       }
     }
@@ -113,7 +113,7 @@ class InstanceIndex {
   incLastId(hash) {
     const { l, h, } = this;
     const name = Buffer.from(utf8Array.fromInt(this.getId('l', l + 2))).toString();
-    const serials = this.getSerials('l', l + 2, name);
+    const serials = this.getSerials('l', l + 2);
     if (!serials.check()) {
       serials.create(['i']);
       serials.add([hash.length]);
@@ -184,10 +184,12 @@ class InstanceIndex {
     const fd = fs.openSync(idPath, 'r+');
     let id = utf8Array.toInt(fs.readFileSync(fd));
     id += 1n;
-    fs.writeFileSync(fd, Buffer.from(utf8Array.fromInt(id)));
+    const buf = Buffer.from(utf8Array.fromInt(id));
+    fs.writeSync(fd, buf, 0, buf.length, 0);
   }
 
-  getSerials(t, l, name) {
+  getSerials(t, l) {
+    const name = this.getName(t, l);
     const { pkgPath, } = this;
     const pn = this.getPathNameWithId(t, l);
     const p = path.join(pkgPath, this.getPathNameWithId(t, l));
@@ -197,19 +199,24 @@ class InstanceIndex {
 
   perpareSerials(t, name, type, serial, l) {
     const { pkgPath, m, } = this;
-    let serials = this.getSerials(t, l, name);
+    let serials = this.getSerials(t, l);
     if (!serials.check()) {
+      console.log(1);
       this.createSerials(t, l, type, name);
-      serials = this.getSerials(t, l, name);
+      serials = this.getSerials(t, l);
       this.addSerials(serials, serial, t, l);
     } else {
-      serials = this.getSerials(t, l, name);
+      serials = this.getSerials(t, l);
       const s = this.readSerials(serials, t, l);
       if (s[0][0] === serial[0]) {
+        console.log(2);
         this.addSerials(serials, serial, t, l);
       } else {
+        console.log(3);
         this.incId(t, l);
         this.createSerials(t, l, type);
+        serials = this.getSerials(t, l);
+        this.addSerials(serials, serial, t, l);
       }
     }
   }
@@ -217,7 +224,7 @@ class InstanceIndex {
   createSerials(t, l, type, name) {
     const { pkgPath, } = this;
     if (name === undefined) {
-      name = Buffer.from(utf8Array.fromInt(this.getId('l', l))).toString();
+      name = this.getName(t, l);
     }
     const pn = this.getPathNameWithId(t, l);
     const p = path.join(pkgPath, pn);
@@ -231,27 +238,13 @@ class InstanceIndex {
     if (!h[pn]) {
       const s = this.readSerials(serials, t, l);
       this.hashSerial(s, pn, 0);
+      this.updateSerials(serials, t, l);
     }
     if (!h[pn][serial[0]]) {
       serials.add(serial);
       this.updateSerials(serials, t, l);
       const newSerial = this.readSerials(serials, t, l);
       this.hashSerial(newSerial, pn, 0);
-    }
-  }
-
-  addLastSerials(serials, serial, t, l) {
-    const pn = this.getPathNameWithId(t, l);
-    const { h, } = this;
-    if (!h[pn]) {
-      const s = this.readSerials(serials, t, l);
-      this.hashSerial(s, pn, 1);
-    }
-    if (!h[pn][serial[1]]) {
-      serials.add(serial);
-      this.updateSerials(serials, t, l);
-      const newSerial = this.readSerials(serials, t, l);
-      this.hashSerial(newSerial, pn, 1);
     }
   }
 
