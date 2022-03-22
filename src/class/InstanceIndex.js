@@ -133,7 +133,7 @@ class InstanceIndex {
       s = serials.read();
       s = this.readSerials(serials, 'l', l + 2);
     }
-    return s.findIndex(e => e[0] === hash.length);
+    return s.findIndex(e => e[0] === BigInt(hash.length));
   }
 
   perpare(location) {
@@ -201,7 +201,6 @@ class InstanceIndex {
     const { pkgPath, m, } = this;
     let serials = this.getSerials(t, l);
     if (!serials.check()) {
-      console.log(1);
       this.createSerials(t, l, type, name);
       serials = this.getSerials(t, l);
       this.addSerials(serials, serial, t, l);
@@ -209,10 +208,8 @@ class InstanceIndex {
       serials = this.getSerials(t, l);
       const s = this.readSerials(serials, t, l);
       if (s[0][0] === serial[0]) {
-        console.log(2);
         this.addSerials(serials, serial, t, l);
       } else {
-        console.log(3);
         this.incId(t, l);
         this.createSerials(t, l, type);
         serials = this.getSerials(t, l);
