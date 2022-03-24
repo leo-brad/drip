@@ -6,7 +6,7 @@ import * as byteArray from '~/lib/byteArray';
 class Serials {
   constructor(p, n) {
     if (!fs.existsSync(p)) {
-      fs.mkdirSync(p);
+      fs.mkdirSync(p, { recursive: true, });
     }
     this.serialsPath = path.join(p, n);
     this.typePath = path.join(p, n + '-t');
