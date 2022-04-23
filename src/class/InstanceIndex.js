@@ -36,6 +36,15 @@ function getIdsPath(ids) {
   return p;
 }
 
+function makeIdNode(idxPath, totalPath, idBuf, c) {
+  const idPath = path.join(idxPath, idBuf.toString());
+  fs.appendFileSync(idPath, c);
+  fs.writeFileSync(fs.openSync(totalPath, 'w'), idBuf);
+  const serials = new Serials(idxPath, idBuf.toString() + '-r');
+  serials.create(['i', 'i']);
+}
+
+
 class InstanceIndex {
   constructor(l) {
     this.h = {};
@@ -87,16 +96,12 @@ class InstanceIndex {
     if (!fs.existsSync(idxPath)) {
       const idBuf = 'c' + Buffer.from(utf8Array.fromInt(0));
       fs.mkdirSync(idxPath, { recursive: true, });
-      fs.writeFileSync(fs.openSync(totalPath, 'w'), idBuf);
-      const idPath = path.join(idxPath, idBuf.toString());
-      fs.appendFileSync(idPath, c);
+      makeIdNode(idxPath, totalPath, idBuf, c);
     } else {
       const total = utf8Array.toInt(fs.readFileSync(totalPath));
       const idBuf = 'c' + Buffer.from(utf8Array.fromInt(total + 1n));
       if (iteratorLastId(idxPath, total, c)) {
-        const idPath = path.join(idxPath, idBuf.toString());
-        fs.appendFileSync(idPath, c);
-        fs.writeFileSync(fs.openSync(totalPath, 'w'), idBuf);
+        makeIdNode(idxPath, totalPath, idBuf, c);
       }
     }
   }
