@@ -1,5 +1,5 @@
-import ConfigExec from '~/class/ConfigExec';
+import configExec from '~/lib/configExec';
 
 const [_1, _2, configString, projectPath] = process.argv;
 const config = JSON.parse(configString);
-new ConfigExec({ config, projectPath, }).start();
+configExec(config, projectPath);

@@ -17,9 +17,7 @@ class WatchPath {
   updateEvents() {
     const { config, } = this;
     const {
-      core: {
-        interval=0,
-      }
+      interval=0,
     } = config;
     global.setInterval(() => {
       this.events = [];

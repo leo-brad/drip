@@ -25,7 +25,7 @@ class Serials {
     fs.openSync(serialsPath, 'w');
   }
 
-  read() {
+  readAll() {
     this.initType();
     const { typePath, serialsPath, type, } = this;
     const buf = fs.readFileSync(serialsPath);
@@ -61,6 +61,9 @@ class Serials {
       }
     }
     return serials;
+  }
+
+  readOne() {
   }
 
   add(serial) {

@@ -1,9 +1,10 @@
 import path from 'path';
 import net from 'net';
 import os from 'os';
+import InstanceCache from '~/class/InstanceCache';
 import InstanceIndex from '~/class/InstanceIndex';
 import WatchPath from '~/class/WatchPath';
-import PoolSize from '~/class/PoolSize';
+import getPoolSize from '~/lib/getPoolSize';
 import ProcPool from '~/class/ProcPool';
 import { getPackages, } from '~/lib/package';
 
@@ -14,7 +15,8 @@ class EventSchedule {
     this.emitter = emitter;
     this.priProcs = priProcs;
     this.ii = new InstanceIndex(2);
-    this.size = new PoolSize(config).size;
+    this.ic = new InstanceCache();
+    this.size = getPoolSize(config);
     this.watchPath = new WatchPath(emitter, config);
   }
 
@@ -32,15 +34,15 @@ class EventSchedule {
   initSocket() {
     const server = net.createServer((socket) => {
       this.socket = socket;
-      this.schedule();
+      this.start();
     });
     server.listen(3000);
   }
 
   sendPackages() {
-    const plugins = getPackages();
+    const packages = getPackages();
     const event = 'package';
-    this.writeData([event, plugins]);
+    this.writeData([event, packages]);
   }
 
   fillProcPool(location) {
@@ -65,9 +67,7 @@ class EventSchedule {
 
   checkFreeMemory() {
     const {
-      core: {
-        minMem,
-      },
+      minMem,
     } = this.config;
     let ans = true;
     if (os.freemem() / 1024 ** 2 > minMem) {

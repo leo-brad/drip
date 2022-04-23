@@ -112,15 +112,15 @@ class InstanceIndex {
     const ip = getIdsPath(ids);
     let s;
     if (!h[ip]) {
-      s = serials.read();
+      s = serials.readAll();
       this.hashSerial(s, ip, 0);
     }
     if (!h[ip][hash.length]) {
       serials.add([hash.length]);
-      s = serials.read();
+      s = serials.readAll();
       h[ip][hash.length] = true;
     } else {
-      s = serials.read();
+      s = serials.readAll();
     }
     ids.push(this.getId('l', l + 2, ids));
     return s.findIndex(e => e[0] === BigInt(hash.length));
@@ -188,7 +188,7 @@ class InstanceIndex {
       this.addSerials(serials, serial, t, l, ids);
     } else {
       serials = this.getSerials(t, l, ids);
-      const s = serials.read();
+      const s = serials.readAll();
       if (s[0][0] === serial[0]) {
         this.addSerials(serials, serial, t, l, ids);
       } else {
@@ -215,12 +215,12 @@ class InstanceIndex {
     const ip = getIdsPath(ids);
     const { h, } = this;
     if (!h[ip]) {
-      const s = serials.read();
+      const s = serials.readAll();
       this.hashSerial(s, ip, 0);
     }
     if (!h[ip][serial[0]]) {
       serials.add(serial);
-      const newSerial = serials.read();
+      const newSerial = serials.readAll();
       this.hashSerial(newSerial, ip, 0);
     }
   }

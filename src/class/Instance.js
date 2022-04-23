@@ -3,14 +3,12 @@ import fs from 'fs';
 import Proc from '~/class/Proc';
 
 class Instance {
-  constructor(config, emitter,) {
+  constructor(config, emitter) {
     const {
-      core: {
-        plugins=[],
-      },
+      packages=[],
     } = config;
     this.emitter = emitter;
-    this.plugins = plugins;
+    this.packages = packages;
   }
 
   getPriProcs() {
@@ -19,7 +17,7 @@ class Instance {
 
   iteratorInstance() {
     const ans = [];
-    const { plugins, emitter, } = this;
+    const { packages, emitter, } = this;
     const instancePath = path.normalize('.drip/local/instance');
     if (fs.existsSync(instancePath)) {
       fs.readdirSync(instancePath, {
@@ -29,7 +27,7 @@ class Instance {
         if (regexp.test(i)) {
           const [_, pkg] = i.match(regexp);
           const config = fs.readFileSync(fs.openSync(path.join(instancePath, i), 'r')).toString();
-          if (plugins.includes(pkg)) {
+          if (packages.includes(pkg)) {
             const proc = new Proc({
               command: 'node',
               args: [
