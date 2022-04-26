@@ -72,21 +72,26 @@ class Serials {
     const buf = fs.readFileSync(serialsPath);
     const segments = [];
     let s = position;
-    for (let i = position; i < buf.length; i += 1) {
-      if (buf[i] === 0) {
-        segments.push(buf.slice(s, i));
-        s = i + 1;
+    let serial
+    if (position < buf.length) {
+      for (let i = position; i < buf.length; i += 1) {
+        if (buf[i] === 0) {
+          segments.push(buf.slice(s, i));
+          s = i + 1;
+        }
+        if (segments.length === type.length) {
+          this.position = i + 1;
+          break;
+        }
       }
-      if (segments.length === type.length) {
-        this.position = i + 1;
-        break;
+      let p = 0;
+      serial = [];
+      for (let i = 0; i < segments.length; i += 1) {
+        parseSerial(type[p], segments[i], serial);
+        p += 1;
       }
-    }
-    let serial = [];
-    let p = 0;
-    for (let i = 0; i < segments.length; i += 1) {
-      parseSerial(type[p], segments[i], serial);
-      p += 1;
+    } else {
+      serial = undefined;
     }
     return serial;
   }
@@ -109,12 +114,7 @@ class Serials {
           pbytes.push(Array.from(Buffer.from(serial[i])));
           break;
       }
-      if (i !== serial.length - 1) {
-        pbytes.push(0);
-      }
-    }
-    if (total !== 0) {
-      pbytes.unshift(0);
+      pbytes.push(0);
     }
     return pbytes;
   }
@@ -134,6 +134,7 @@ class Serials {
     this.initType();
     const { serialsPath, type, } = this;
     const pbytes = [];
+    const total = fs.lstatSync(serialsPath).size;
     serials.forEach((serial) => {
       const total = fs.lstatSync(serialsPath).size;
       pbytes.push(this.serialOne(serial, total));
@@ -141,7 +142,6 @@ class Serials {
     const buf = Buffer.from(pbytes.flat(2));
     const { length, path, name, } = this;
     const fd = fs.openSync(serialsPath, 'a');
-    const total = fs.lstatSync(serialsPath).size;
     fs.writeSync(fd, buf, 0, buf.length, total);
   }
 
