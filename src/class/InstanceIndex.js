@@ -37,13 +37,13 @@ function getIdsPath(ids) {
 }
 
 function makeIdNode(idxPath, totalPath, idBuf, c) {
-  const idPath = path.join(idxPath, idBuf.toString());
+  const idPath = path.join(idxPath, 'c' + idBuf.toString());
   fs.appendFileSync(idPath, c);
   fs.writeFileSync(fs.openSync(totalPath, 'w'), idBuf);
-  const serials = new Serials(idxPath, idBuf.toString() + '-r');
+  const recordPath = path.join(idxPath, 'r');
+  const serials = new Serials(recordPath, idBuf.toString());
   serials.create(['i', 'i']);
 }
-
 
 class InstanceIndex {
   constructor(l) {
@@ -94,12 +94,12 @@ class InstanceIndex {
     const idxPath = path.join(pkgPath, getIdsPath(ids));
     const totalPath = path.join(idxPath, 'i');
     if (!fs.existsSync(idxPath)) {
-      const idBuf = 'c' + Buffer.from(utf8Array.fromInt(0));
+      const idBuf = Buffer.from(utf8Array.fromInt(0));
       fs.mkdirSync(idxPath, { recursive: true, });
       makeIdNode(idxPath, totalPath, idBuf, c);
     } else {
       const total = utf8Array.toInt(fs.readFileSync(totalPath));
-      const idBuf = 'c' + Buffer.from(utf8Array.fromInt(total + 1n));
+      const idBuf = Buffer.from(utf8Array.fromInt(total + 1n));
       if (iteratorLastId(idxPath, total, c)) {
         makeIdNode(idxPath, totalPath, idBuf, c);
       }

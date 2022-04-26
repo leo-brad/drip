@@ -19,5 +19,4 @@ export function toInt(buf) {
   for (let i = 0n; i < buf.length; i += 1n) {
     n += (BigInt(buf[i]) - 32n) * (size - 32n) ** i;
   }
-  return n;
 }

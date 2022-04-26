@@ -3,6 +3,17 @@ import fs from 'fs';
 import * as nonZeroByteArray from '~/lib/nonZeroByteArray';
 import * as byteArray from '~/lib/byteArray';
 
+function parseSerial(t, e, serial) {
+  switch (t) {
+    case 'i':
+      serial.push(nonZeroByteArray.toInt(e));
+      break;
+    case 's':
+      serial.push(e.toString());
+      break;
+  }
+}
+
 class Serials {
   constructor(p, n) {
     if (!fs.existsSync(p)) {
@@ -42,16 +53,7 @@ class Serials {
     let serial = [];
     let p = 0;
     for (let i = 0; i < segments.length; i += 1) {
-      const t = type[p];
-      const e = segments[i];
-      switch (t) {
-        case 'i':
-          serial.push(nonZeroByteArray.toInt(e));
-          break;
-        case 's':
-          serial.push(e.toString());
-          break;
-      }
+      parseSerial(type[p], segments[i], serial);
       if (p === type.length - 1) {
         serials.push(serial);
         serial = [];
@@ -64,12 +66,40 @@ class Serials {
   }
 
   readOne() {
+    this.initType();
+    this.initPosition();
+    const { typePath, serialsPath, type, position, } = this;
+    const buf = fs.readFileSync(serialsPath);
+    const segments = [];
+    let s = position;
+    for (let i = position; i < buf.length; i += 1) {
+      if (buf[i] === 0) {
+        segments.push(buf.slice(s, i));
+        s = i + 1;
+      }
+      if (segments.length === type.length) {
+        this.position = i + 1;
+        break;
+      }
+    }
+    let serial = [];
+    let p = 0;
+    for (let i = 0; i < segments.length; i += 1) {
+      parseSerial(type[p], segments[i], serial);
+      p += 1;
+    }
+    return serial;
   }
 
-  add(serial) {
-    this.initType();
-    const { serialsPath, type, } = this;
+  initPosition() {
+    if (this.position === undefined) {
+      this.position = 0;
+    }
+  }
+
+  serialOne(serial, total) {
     const pbytes = [];
+    const { serialsPath, type, } = this;
     for (let i = 0; i < serial.length; i += 1) {
       switch (type[i]) {
         case 'i':
@@ -83,13 +113,35 @@ class Serials {
         pbytes.push(0);
       }
     }
-    const total = fs.lstatSync(serialsPath).size;
     if (total !== 0) {
       pbytes.unshift(0);
     }
+    return pbytes;
+  }
+
+  addOne(serial) {
+    this.initType();
+    const { serialsPath, type, } = this;
+    const total = fs.lstatSync(serialsPath).size;
+    const pbytes = this.serialOne(serial, total);
     const buf = Buffer.from(pbytes.flat());
     const { length, path, name, } = this;
     const fd = fs.openSync(serialsPath, 'a');
+    fs.writeSync(fd, buf, 0, buf.length, total);
+  }
+
+  addAll(serials) {
+    this.initType();
+    const { serialsPath, type, } = this;
+    const pbytes = [];
+    serials.forEach((serial) => {
+      const total = fs.lstatSync(serialsPath).size;
+      pbytes.push(this.serialOne(serial, total));
+    });
+    const buf = Buffer.from(pbytes.flat(2));
+    const { length, path, name, } = this;
+    const fd = fs.openSync(serialsPath, 'a');
+    const total = fs.lstatSync(serialsPath).size;
     fs.writeSync(fd, buf, 0, buf.length, total);
   }
 

@@ -20,7 +20,7 @@ export default function contentCompare(content1, content2) {
         break;
       case false:
         if (c1 === c2) {
-          ans.push({ s: start, c: cmp.join(''), });
+          ans.push([start, cmp.join('')]);
           cmp = [];
           eq = true;
         } else {
@@ -31,7 +31,7 @@ export default function contentCompare(content1, content2) {
     idx += 1;
   }
   if (cmp.length > 0) {
-    ans.push({ s: start, c: cmp.join(''), });
+    ans.push([start, cmp.join('')]);
   }
   return ans;
 }
