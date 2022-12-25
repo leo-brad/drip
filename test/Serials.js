@@ -9,3 +9,8 @@ serials.addAll([['fasdfasdfs', 423423], ['fasdfas', 43243]]);
 console.log(serials.readAll());
 console.log(serials.readOne());
 console.log(serials.readOne());
+console.log(serials.readOne());
+console.log(serials.readOne());
+console.log(serials.readOne());
+console.log(serials.readOne());
+console.log(serials.readOne());

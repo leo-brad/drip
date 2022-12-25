@@ -168,6 +168,7 @@ class Proc {
       this.outputMessage(message.toString());
     });
     this.proc = proc;
+    return proc;
   }
 
   makeProcDirectory() {

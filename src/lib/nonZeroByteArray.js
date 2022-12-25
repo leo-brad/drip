@@ -16,6 +16,7 @@ export function fromInt(n) {
 
 export function toInt(buf) {
   let n = 0n;
+  const { length, } = buf;
   for (let i = 0n; i < buf.length; i += 1n) {
     n += (BigInt(buf[i]) - 1n) * (size - 1n) ** i;
   }

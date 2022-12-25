@@ -1,11 +1,11 @@
 import fs from 'fs';
 import path from 'path';
-import Table from '~/class/Table';
 import Serials from '~/class/Serials';
 import ContentHash from '~/class/ContentHash';
 import * as nonZeroByteArray from '~/lib/nonZeroByteArray';
 import * as byteArray from '~/lib/byteArray';
 import * as utf8Array from '~/lib/utf8Array';
+import contentCompare from '~/lib/contentCompare';
 
 function getHashTable(serial, i) {
   const hashTable = {};
@@ -16,12 +16,13 @@ function getHashTable(serial, i) {
   return hashTable;
 }
 
+// @TODO
 function iteratorLastId(idxPath, total, c) {
-  let ans = true;
+  let ans = -1;
   for (let i = 0; i <= total; i += 1) {
     const idPath = path.join(idxPath, 'c' + Buffer.from(utf8Array.fromInt(i)).toString());
     if (c === fs.readFileSync(idPath).toString()) {
-      ans = false;
+      ans = i;
       break;
     }
   }
@@ -36,13 +37,32 @@ function getIdsPath(ids) {
   return p;
 }
 
-function makeIdNode(idxPath, totalPath, idBuf, c) {
+// @TODO
+function getCntDiff(c, idxPath) {
+  const zeroIdPath = path.join(idxPath, 'c' + Buffer.from(utf8Array.fromInt(0)).toString());
+  const zeroC = fs.readFileSync(zeroIdPath).toString();
+  return contentCompare(zeroC, c);
+}
+
+function makeIdNode(idxPath, totalPath, idBuf, c, isZero) {
   const idPath = path.join(idxPath, 'c' + idBuf.toString());
   fs.appendFileSync(idPath, c);
   fs.writeFileSync(fs.openSync(totalPath, 'w'), idBuf);
+
+  if (!isZero) {
+    const diffPath = path.join(idxPath, 'd' + idBuf.toString());
+    fs.appendFileSync(diffPath, JSON.stringify(getCntDiff(c, idxPath)));
+  }
+
+  const serials = findRecordById(idxPath, idBuf);
+  serials.create(['i', 'i']);
+  return serials;
+}
+
+function findRecordById(idxPath, idBuf) {
   const recordPath = path.join(idxPath, 'r');
   const serials = new Serials(recordPath, idBuf.toString());
-  serials.create(['i', 'i']);
+  return serials;
 }
 
 class InstanceIndex {
@@ -71,7 +91,7 @@ class InstanceIndex {
     for (let i = 0; i < hashs.length; i += 1) {
       this.perpareNextLevel(hashs[i], i + 1, ids);
     }
-    this.perpareLastLevel(hashs[hashs.length - 1], content, ids);
+    return this.perpareLastLevel(hashs[hashs.length - 1], content, ids);
   }
 
   perpareNextLevel(c, l, ids) {
@@ -93,17 +113,22 @@ class InstanceIndex {
     const id = this.incLastId(h, ids);
     const idxPath = path.join(pkgPath, getIdsPath(ids));
     const totalPath = path.join(idxPath, 'i');
+    let ans;
     if (!fs.existsSync(idxPath)) {
       const idBuf = Buffer.from(utf8Array.fromInt(0));
       fs.mkdirSync(idxPath, { recursive: true, });
-      makeIdNode(idxPath, totalPath, idBuf, c);
+      ans = makeIdNode(idxPath, totalPath, idBuf, c, true);
     } else {
       const total = utf8Array.toInt(fs.readFileSync(totalPath));
       const idBuf = Buffer.from(utf8Array.fromInt(total + 1n));
-      if (iteratorLastId(idxPath, total, c)) {
-        makeIdNode(idxPath, totalPath, idBuf, c);
+      const id = iteratorLastId(idxPath, total, c);
+      if (id === -1) {
+        ans = makeIdNode(idxPath, totalPath, idBuf, c, false);
+      } {
+        ans = findRecordById(idxPath, idBuf);
       }
     }
+    return ans;
   }
 
   incLastId(hash, ids) {
@@ -112,7 +137,7 @@ class InstanceIndex {
     const serials = this.getSerials('l', l + 2, ids);
     if (!serials.check()) {
       serials.create(['i']);
-      serials.add([hash.length]);
+      serials.addOne([hash.length]);
     }
     const ip = getIdsPath(ids);
     let s;
@@ -121,7 +146,7 @@ class InstanceIndex {
       this.hashSerial(s, ip, 0);
     }
     if (!h[ip][hash.length]) {
-      serials.add([hash.length]);
+      serials.addOne([hash.length]);
       s = serials.readAll();
       h[ip][hash.length] = true;
     } else {
@@ -224,7 +249,7 @@ class InstanceIndex {
       this.hashSerial(s, ip, 0);
     }
     if (!h[ip][serial[0]]) {
-      serials.add(serial);
+      serials.addOne(serial);
       const newSerial = serials.readAll();
       this.hashSerial(newSerial, ip, 0);
     }

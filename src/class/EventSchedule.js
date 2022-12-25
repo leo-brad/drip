@@ -9,34 +9,27 @@ import ProcPool from '~/class/ProcPool';
 import { getPackages, } from '~/lib/package';
 
 class EventSchedule {
-  constructor(priProcs, emitter, config,) {
+  constructor(pps, emitter, config,) {
     this.pool = [];
     this.config = config;
     this.emitter = emitter;
-    this.priProcs = priProcs;
-    this.ii = new InstanceIndex(2);
+    this.pps = pps;
+    // @TODO
+    this.ii = new InstanceIndex(1);
     this.ic = new InstanceCache();
     this.size = getPoolSize(config);
-    this.watchPath = new WatchPath(emitter, config);
+    this.wp = new WatchPath(emitter, config);
   }
 
   start() {
     this.sendPackages();
     this.bindEvent();
-    this.watchPath.start();
+    this.wp.start();
     this.fillProcPool();
   }
 
   writeData(data) {
     //console.log(JSON.stringify(data));
-  }
-
-  initSocket() {
-    const server = net.createServer((socket) => {
-      this.socket = socket;
-      this.start();
-    });
-    server.listen(3000);
   }
 
   sendPackages() {
@@ -46,16 +39,13 @@ class EventSchedule {
   }
 
   fillProcPool(location) {
-    this.procPool = new ProcPool(this.size);
-    const { priProcs, procPool, } = this;
-    priProcs.forEach(({ pri, proc, }) => {
-      procPool.addPriProc(pri, proc);
+    this.pp = new ProcPool(this.size);
+    const { pps, pp, } = this;
+    pps.forEach(({ pri, proc, }) => {
+      pp.addPriProc(pri, proc);
     });
-    procPool.updatePool();
-    this.pool = procPool.getPool().map((proc) => {
-      proc.start();
-      return proc;
-    });
+    pp.updatePool();
+    this.pool = pp.getPool().map((proc) => proc.start());
   }
 
   cleanProcPool() {
@@ -77,14 +67,17 @@ class EventSchedule {
   }
 
   bindEvent() {
-    const { emitter, socket, } = this;
+    const { ic, emitter, } = this;
     emitter.on('file', (eventType, location) => {
       if (
         /^\.drip\/local\/instance\/\[(\w+)\]:(\w+)$/
         .test(path.relative('.', location))
       ) {
+        const regexp = /^\.drip\/local\/instance\/\[(\w+)\]:(\w+)$/
+        const [_, pkg, instance] = path.relative('.', location).match(regexp);
         const { ii, } = this;
-        ii.indexInstance(location);
+        const record = ii.indexInstance(location);
+        ic.cache(pkg, instance, record);
       } else {
         this.cleanProcPool();
         this.fillProcPool(location);
