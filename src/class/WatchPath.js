@@ -45,7 +45,7 @@ class WatchPath {
     const { emitter, } = this;
     fs.watch(location, { recursive: true, }, (eventType) => {
       if (eventType === 'rename') {
-        this.recurse(path.normalize('.'));
+        this.recurse(path.resolve('.'));
       }
     });
   }
@@ -75,9 +75,7 @@ class WatchPath {
   check(location) {
     const { config, } = this;
     const {
-      core: {
-        ignores=[],
-      }
+      ignores=[],
     } = config;
     let ans = false;
     if (

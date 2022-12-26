@@ -8,9 +8,9 @@ export default function getPoolSize(config) {
   const minSize = 2;
   let size;
   if (cpusLength <= minSize) {
-    size = minSize + adjustCore - 1;
+    size = minSize + adjustCore - 2;
   } else {
-    size = cpusLength + adjustCore - 1;
+    size = cpusLength + adjustCore - 2;
   }
   return size;
 }

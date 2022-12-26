@@ -3,7 +3,7 @@ import fs from 'fs';
 
 export function getPackages() {
   const ans = [];
-  const alldir = path.normalize('.drip/local/package/');
+  const alldir = path.resolve('.drip/local/package/');
   fs.readdirSync(alldir).forEach((n) => {
     const eachdir = path.join(alldir, n);
     if (fs.lstatSync(eachdir).isDirectory()) {
