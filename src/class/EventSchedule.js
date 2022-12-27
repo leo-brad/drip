@@ -14,8 +14,7 @@ class EventSchedule {
     this.config = config;
     this.emitter = emitter;
     this.pps = pps;
-    // @TODO
-    this.ii = new InstanceIndex(1);
+    this.ii = new InstanceIndex(2);
     this.ic = new InstanceCache();
     this.size = getPoolSize(config);
     this.wp = new WatchPath(emitter, config);
@@ -53,6 +52,8 @@ class EventSchedule {
     for (let i = 0; i < pool.length; i += 1) {
       pool[i].getProc().kill(2);
     }
+    const event = 'restart';
+    this.writeData([event]);
   }
 
   checkFreeMemory() {

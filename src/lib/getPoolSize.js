@@ -12,5 +12,8 @@ export default function getPoolSize(config) {
   } else {
     size = cpusLength + adjustCore - 2;
   }
+  if (size < 1) {
+    size = 1;
+  }
   return size;
 }
