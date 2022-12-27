@@ -9,7 +9,7 @@ class WatchPath {
   }
 
   start() {
-    this.watchNew(path.resolve('.'));
+    this.watchNewAndRemove(path.resolve('.'));
     this.recurse(path.resolve('.'));
     this.updateEvents();
   }
@@ -25,23 +25,25 @@ class WatchPath {
   }
 
   recurse(location) {
-    if (fs.lstatSync(location).isDirectory()) {
-      fs.readdirSync(location, {
-        withFileTyps: true,
-      }).forEach((n) => {
-        if (!this.check(n)) {
-          this.recurse(path.join(location, n));
+    if (fs.existsSync(location)) {
+      if (fs.lstatSync(location).isDirectory()) {
+        fs.readdirSync(location, {
+          withFileTyps: true,
+        }).forEach((n) => {
+          if (!this.check(n)) {
+            this.recurse(path.join(location, n));
+          }
+        });
+      }
+      if (fs.lstatSync(location).isFile(location)) {
+        if (!this.check(location)) {
+          this.watchRenameAndChange(location);
         }
-      });
-    }
-    if (fs.lstatSync(location).isFile(location)) {
-      if (!this.check(location)) {
-        this.watchRenameAndChange(location);
       }
     }
   }
 
-  watchNew(location) {
+  watchNewAndRemove(location) {
     const { emitter, } = this;
     fs.watch(location, { recursive: true, }, (eventType) => {
       if (eventType === 'rename') {
