@@ -48,7 +48,7 @@ class Instance {
         const [_, pkg] = i.match(regexp);
         const fp = path.resolve(path.join('.drip', p, 'instance'));
         const config = fs.readFileSync(fs.openSync(path.join(fp, i), 'r')).toString();
-        if (packages.includes(pkg)) {
+        if (config.length !== 0 && packages.includes(pkg)) {
           const proc = new Proc({
             command: 'node',
             args: [
