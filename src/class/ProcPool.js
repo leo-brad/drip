@@ -8,6 +8,10 @@ class ProcPool {
     this.waits = new PriProcBucket(100, 10);
   }
 
+  updateSize(size) {
+    this.size = size;
+  }
+
   getPool() {
     return this.pool;
   }

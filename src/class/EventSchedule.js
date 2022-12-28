@@ -56,6 +56,12 @@ class EventSchedule {
     this.writeData([event]);
   }
 
+  updateProcPool() {
+    const { pp, } = this;
+    pp.updatePool();
+    this.pool = pp.getDiif().map((proc) => proc.start());
+  }
+
   checkFreeMemory() {
     const {
       minMem,
@@ -88,6 +94,7 @@ class EventSchedule {
       const event = 'proc';
       switch (field) {
         case 'end':
+          this.updateProcPool();
           break;
       }
       this.writeData([event, instance, field, data, id,]);
