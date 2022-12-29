@@ -7,6 +7,7 @@
   "description": "A gui for drip.",
   "scripts": {
     "run": "yarn run build && node dist/index.js '{\"interval\":5000,\"minMem\":100,\"adjustCore\":0,\"ignores\":[\".drip/local/\",\".git/\",\".gitkeep\"],\"packages\":[\"[shell](/tmp/drip-package-shell-static/.git/)\"],\"indexLevel\":2}' '/tmp/example/'",
+    "test": "jest ./test",
     "lint": "eslint ./src",
     "build": "babel src --out-dir dist"
   },
@@ -15,8 +16,10 @@
     "@babel/cli": "^7.16.7",
     "@babel/core": "^7.16.7",
     "@babel/preset-env": "^7.20.2",
+    "babel-jest": "^29.3.1",
     "babel-plugin-root-import": "^6.6.0",
     "eslint": "^8.6.0",
-    "eslint-plugin-import": "^2.25.4"
+    "eslint-plugin-import": "^2.25.4",
+    "jest": "^29.3.1"
   }
 }
