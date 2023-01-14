@@ -40,18 +40,16 @@ class EventSchedule {
   fillProcPool(location) {
     this.pp = new ProcPool(this.size);
     const { pps, pp, } = this;
-    pps.forEach(({ pri, proc, }) => {
-      pp.addPriProc(pri, proc);
-    });
+    pps.forEach(({ pri, proc, }) => pp.addPriProc(pri, proc));
     pp.updatePool();
     this.pool = pp.getPool().map((proc) => proc.start());
   }
 
   cleanProcPool() {
     const { pool, } = this;
-    for (let i = 0; i < pool.length; i += 1) {
-      pool[i].getProc().kill(2);
-    }
+    pool.forEach((e) => {
+      e.getProc().kill(2);
+    });
     const event = 'restart';
     this.writeData([event]);
   }
