@@ -9,10 +9,10 @@ class Proc {
     this.args = args;
     this.pattern = pattern;
     this.instance = instance;
-    this.stdoutId = 0;
-    this.stderrId = 0;
-    this.messageId = 0;
     if (pattern.includes('file')) {
+      this.stdoutId = 0;
+      this.stderrId = 0;
+      this.messageId = 0;
       this.procPath = path.join(directory, instance);
       this.directory = directory;
     }
@@ -29,12 +29,23 @@ class Proc {
     return this.proc;
   }
 
-  outputStdout(data) {
-    const { pattern, stdoutId, } = this;
+  writeData(data) {
+    const { pattern, } = this;
     if (pattern.includes('event')) {
-      const { instance, emitter, } = this;
-      emitter.emit('proc', { field: 'stdout', instance, data, });
+      const { emitter, } = this;
+      emitter.emit(data);
     }
+    if (pattern.includes('socket')) {
+      const { socket, } = this;
+      socket.write(JSON.stringify(data), 'utf-8');
+    }
+  }
+
+  outputStdout(data) {
+    const { instance, } = this;
+    this.writeData(['proc', instance, 'stdout', data,]);
+
+    const { pattern, } = this;
     if (pattern.includes('file')) {
       this.stdoutId += 1;
       const { procPath, } = this;
@@ -45,22 +56,13 @@ class Proc {
         }
       });
     }
-    if (pattern.includes('socket')) {
-      const { socket, } = this;
-      socket.write(JSON.stringify({
-        event: 'proc',
-        field: 'stdout',
-        data,
-      }));
-    }
   }
 
   outputStderr(data) {
-    const { pattern, stderrId, } = this;
-    if (pattern.includes('event')) {
-      const { instance, emitter, } = this;
-      emitter.emit('proc', { field: 'stderr', instance, data, });
-    }
+    const { instance, } = this;
+    this.writeData(['proc', instance, 'stderr', data,]);
+
+    const { pattern, } = this;
     if (pattern.includes('file')) {
       this.stderrId += 1;
       const { procPath, } = this;
@@ -71,22 +73,13 @@ class Proc {
         }
       });
     }
-    if (pattern.includes('socket')) {
-      const { socket, } = this;
-      socket.write(JSON.stringify({
-        event: 'proc',
-        field: 'stderr',
-        data,
-      }));
-    }
   }
 
   outputCode(code) {
+    const { instance, } = this;
+    this.writeData(['proc', instance, 'close', code]);
+
     const { pattern, } = this;
-    if (pattern.includes('event')) {
-      const { instance, emitter, } = this;
-      emitter.emit('proc', { field: 'close', instance, code, });
-    }
     if (pattern.includes('file')) {
       const { procPath, } = this;
       const filePath = path.join(procPath, 'code');
@@ -96,22 +89,13 @@ class Proc {
         }
       });
     }
-    if (pattern.includes('socket')) {
-      const { socket, } = this;
-      socket.write(JSON.stringify({
-        event: 'proc',
-        field: 'close',
-        data: code,
-      }));
-    }
   }
 
   outputMessage(message) {
+    const { instance, } = this;
+    this.writeData(['proc', instance, 'message', message,]);
+
     const { pattern, } = this;
-    if (pattern.includes('event')) {
-      const { instance, emitter, } = this;
-      emitter.emit('proc', { field: 'message', instance, message, });
-    }
     if (pattern.includes('file')) {
       this.messageId += 1;
       const { procPath, } = this;
@@ -122,32 +106,15 @@ class Proc {
         }
       });
     }
-    if (pattern.includes('socket')) {
-      const { socket, } = this;
-      socket.write(JSON.stringify({
-        event: 'proc',
-        field: 'message',
-        data: message,
-      }));
-    }
   }
 
   outputNew() {
+    const { instance, } = this;
+    this.writeData(['proc', instance, 'new']);
+
     const { pattern, } = this;
-    if (pattern.includes('event')) {
-      const { instance, emitter, } = this;
-      emitter.emit('proc', { field: 'new', instance, });
-    }
     if (pattern.includes('file')) {
       this.makeProcDirectory();
-    }
-    if (pattern.includes('socket')) {
-      const { socket, } = this;
-      socket.write(JSON.stringify({
-        event: 'proc',
-        field: 'new',
-        data: { instance, },
-      }));
     }
   }
 
@@ -165,7 +132,7 @@ class Proc {
       this.outputCode(code);
     });
     proc.on('message', (message) => {
-      this.outputMessage(message.toString());
+      this.outputMessage(message);
     });
     this.proc = proc;
     return this;
