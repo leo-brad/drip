@@ -1,4 +1,6 @@
-import configExec from '~/lib/configExec';
+import EventEmitter from 'events';
+import Instance from '~/class/Instance';
+import EventSchedule from '~/class/EventSchedule';
 
 const [_1, _2, configString, projectPath] = process.argv;
 const config = JSON.parse(configString);

@@ -1,6 +1,7 @@
 import { execSync, } from 'child_process';
 import path from 'path';
 import fs from 'fs';
+import chalk from 'chalk';
 import parseGitStatus from '~/lib/parseGitStatus';
 
 class WatchPath {
@@ -9,7 +10,7 @@ class WatchPath {
     this.emitter = emitter;
     this.config = config;
     this.events = [];
-    this.GitStatus = new GitStatus();
+    this.started = false;
   }
 
   checkGitExist() {
@@ -35,6 +36,7 @@ class WatchPath {
     this.watchRename(path.resolve('.'));
     this.recurse(path.resolve('.'));
     this.updateEvents();
+    this.started = true;
   }
 
   updateEvents() {
@@ -61,22 +63,19 @@ class WatchPath {
       if (fs.lstatSync(location).isFile(location)) {
         if (!this.check(location)) {
           this.watchChange(location);
+          const { started, } = this;
+          if (started) {
+            execSync('git add --all');
+          }
         }
-      }
-    } else {
-      execSync('git add --all');
-      if (this.checkModify()) {
-        this.generateEvent(eventType, path.resolve(location));
       }
     }
   }
 
   watchRename(location) {
     const { emitter, } = this;
-    fs.watch(location, { recursive: true, }, (eventType) => {
-      if (eventType === 'rename') {
-        this.recurse(path.resolve('.'));
-      }
+    fs.watch(location, { recursive: true, }, (eventType, filename) => {
+      this.recurse(path.resolve(location, filename));
     });
   }
 
@@ -90,10 +89,12 @@ class WatchPath {
   }
 
   checkModify() {
-    const status = parseGitStatus(execSync('git status'));
+    const status = parseGitStatus(execSync('git status').toString());
     let ans = false;
-    if (status && status['modified:'].length > 0) {
-      ans = true;
+    if (status) {
+      if (Array.isArray(status['modified:']) && status['modified:'].length > 0) {
+        ans = true;
+      }
     }
     return ans;
   }
@@ -126,7 +127,7 @@ class WatchPath {
       return ans;
     }
     for (let i = 0; i < ignores.length; i += 1) {
-      if (new RegExp('^' + ignores[i] + '$').test(path.relative('.', location))) {
+      if (new RegExp('^' + ignores[i]).test(path.relative('.', location))) {
         ans = true;
         break;
       };
