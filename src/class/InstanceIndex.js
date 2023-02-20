@@ -16,7 +16,6 @@ function getHashTable(serial, i) {
   return hashTable;
 }
 
-// @TODO
 function iteratorLastId(idxPath, total, c) {
   let ans = -1;
   for (let i = 0; i <= total; i += 1) {

@@ -1,7 +1,7 @@
 import { execSync, } from 'child_process';
 import path from 'path';
 import fs from 'fs';
-import GitStatus from '~/class/GitStatus';
+import parseGitStatus from '~/lib/parseGitStatus';
 
 class WatchPath {
   constructor(emitter, config) {
@@ -65,6 +65,9 @@ class WatchPath {
       }
     } else {
       execSync('git add --all');
+      if (this.checkModify()) {
+        this.generateEvent(eventType, path.resolve(location));
+      }
     }
   }
 
@@ -80,11 +83,19 @@ class WatchPath {
   watchChange(location) {
     const { emitter, } = this;
     fs.watch(location, (eventType, filename) => {
-      this.generateEvent(eventType, path.resolve(location));
+      if (this.checkModify()) {
+        this.generateEvent(eventType, path.resolve(location));
+      }
     });
   }
 
   checkModify() {
+    const status = parseGitStatus(execSync('git status'));
+    let ans = false;
+    if (status && status['modified:'].length > 0) {
+      ans = true;
+    }
+    return ans;
   }
 
   generateEvent(eventType, location) {
