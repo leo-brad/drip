@@ -1,23 +1,33 @@
 import { execSync, } from 'child_process';
 import path from 'path';
 import fs from 'fs';
-import checkDependence from '~/lib/checkDependence;'
+import GitStatus from '~/class/GitStatus';
 
 class WatchPath {
   constructor(emitter, config) {
+    this.checkGitExist();
     this.emitter = emitter;
     this.config = config;
     this.events = [];
-
-    checkDependence(['git']);
-    this.checkGitExist();
+    this.GitStatus = new GitStatus();
   }
 
   checkGitExist() {
     try {
       execSync('git status');
     } catch (e) {
-      console.log();
+      console.log([
+        '',
+        chalk.bold('Check git status error') + ':',
+        '',
+        'Drip need use `' + chalk.bold('git') + '` get file content change message.',
+        '',
+        chalk.bold('Useful comment') + ':',
+        '',
+        '  - Please use `' + chalk.bold('git init') + '` initial current project as a git project.',
+        '',
+      ].join('\n'));
+      process.exit(0);
     }
   }
 
@@ -72,6 +82,9 @@ class WatchPath {
     fs.watch(location, (eventType, filename) => {
       this.generateEvent(eventType, path.resolve(location));
     });
+  }
+
+  checkModify() {
   }
 
   generateEvent(eventType, location) {
