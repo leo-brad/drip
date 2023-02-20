@@ -11,7 +11,9 @@
     "lint": "eslint ./src",
     "build": "babel src --out-dir dist"
   },
-  "dependencies": {},
+  "dependencies": {
+    "chalk": "^5.2.0"
+  },
   "devDependencies": {
     "@babel/cli": "^7.16.7",
     "@babel/core": "^7.16.7",

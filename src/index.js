@@ -1,5 +1,9 @@
-import configExec from '~/lib/configExec';
+//import configExec from '~/lib/configExec';
 
-const [_1, _2, configString, projectPath] = process.argv;
-const config = JSON.parse(configString);
-configExec(config, projectPath);
+//const [_1, _2, configString, projectPath] = process.argv;
+//const config = JSON.parse(configString);
+//configExec(config, projectPath);
+import chalk from 'chalk';
+console.log([
+  '',
+].join('&&'));

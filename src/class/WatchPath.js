@@ -1,15 +1,28 @@
+import { execSync, } from 'child_process';
 import path from 'path';
 import fs from 'fs';
+import checkDependence from '~/lib/checkDependence;'
 
 class WatchPath {
   constructor(emitter, config) {
     this.emitter = emitter;
     this.config = config;
     this.events = [];
+
+    checkDependence(['git']);
+    this.checkGitExist();
+  }
+
+  checkGitExist() {
+    try {
+      execSync('git status');
+    } catch (e) {
+      console.log();
+    }
   }
 
   start() {
-    this.watchNewAndRemove(path.resolve('.'));
+    this.watchRename(path.resolve('.'));
     this.recurse(path.resolve('.'));
     this.updateEvents();
   }
@@ -37,13 +50,15 @@ class WatchPath {
       }
       if (fs.lstatSync(location).isFile(location)) {
         if (!this.check(location)) {
-          this.watchRenameAndChange(location);
+          this.watchChange(location);
         }
       }
+    } else {
+      execSync('git add --all');
     }
   }
 
-  watchNewAndRemove(location) {
+  watchRename(location) {
     const { emitter, } = this;
     fs.watch(location, { recursive: true, }, (eventType) => {
       if (eventType === 'rename') {
@@ -52,7 +67,7 @@ class WatchPath {
     });
   }
 
-  watchRenameAndChange(location) {
+  watchChange(location) {
     const { emitter, } = this;
     fs.watch(location, (eventType, filename) => {
       this.generateEvent(eventType, path.resolve(location));
@@ -87,7 +102,7 @@ class WatchPath {
       return ans;
     }
     for (let i = 0; i < ignores.length; i += 1) {
-      if (new RegExp('^' + ignores[i]).test(path.relative('.', location))) {
+      if (new RegExp('^' + ignores[i] + '$').test(path.relative('.', location))) {
         ans = true;
         break;
       };
