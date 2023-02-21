@@ -1,6 +1,6 @@
 export default function contentCompare(content1, content2) {
   const ans = [];
-  let cmp = [];
+  let cmps = [];
   let start = 0;
   let eq = true;
   let idx = 0;
@@ -13,22 +13,22 @@ export default function contentCompare(content1, content2) {
     if (eq) {
       if (c1 !== c2) {
         start = idx;
-        cmp.push(c2);
+        cmps.push(c2);
         eq = false;
       }
     } else {
       if (c1 === c2) {
-        ans.push([start, cmp.join('')]);
-        cmp = [];
+        ans.push([start, cmps.join('')]);
+        cmps = [];
         eq = true;
       } else {
-        cmp.push(c2);
+        cmps.push(c2);
       }
     }
     idx += 1;
   }
-  if (cmp.length > 0) {
-    ans.push([start, cmp.join('')]);
+  if (cmps.length > 0) {
+    ans.push([start, cmps.join('')]);
   }
   return ans;
 }
