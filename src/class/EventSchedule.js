@@ -6,7 +6,7 @@ import InstanceIndex from '~/class/InstanceIndex';
 import WatchPath from '~/class/WatchPath';
 import getPoolSize from '~/lib/getPoolSize';
 import ProcPool from '~/class/ProcPool';
-import { getPackages, } from '~/lib/package';
+import getPackages from '~/lib/getPackages';
 
 class EventSchedule {
   constructor(pps, emitter, config,) {
@@ -74,21 +74,23 @@ class EventSchedule {
   bindEvent() {
     const { ic, emitter, } = this;
     emitter.on('file', (eventType, location) => {
-      if (
-        /^\.drip\/local\/instance\/\[(\w+)\]:(\w+)$/
-        .test(path.relative('.', location))
-      ) {
-        const regexp = /^\.drip\/local\/instance\/\[(\w+)\]:(\w+)$/
-        const [_, pkg, instance] = path.relative('.', location).match(regexp);
-        const { ii, } = this;
-        const record = ii.indexInstance(location);
-        ic.cache(pkg, instance, record);
-      } else {
-        this.cleanProcPool();
-        this.fillProcPool(location);
+      if (eventType === 'modified') {
+        if (
+          /^\.drip\/local\/instance\/\[(\w+)\]:(\w+)$/
+          .test(path.relative('.', location))
+        ) {
+          const regexp = /^\.drip\/local\/instance\/\[(\w+)\]:(\w+)$/
+          const [_, pkg, instance] = path.relative('.', location).match(regexp);
+          const { ii, } = this;
+          const record = ii.indexInstance(location);
+          ic.cache(pkg, instance, record);
+        } else {
+          this.cleanProcPool();
+          this.fillProcPool(location);
+        }
       }
     });
-    emitter.on('proc', async ({ field, instance, data=''}) => {
+    emitter.on('proc', ([field, instance, data='']) => {
       const event = 'proc';
       switch (field) {
         case 'end':

@@ -10,23 +10,20 @@ export default function contentCompare(content1, content2) {
     if (c1 === '' && c2 === '') {
       break;
     }
-    switch (eq) {
-      case true:
-        if (c1 !== c2) {
-          start = idx;
-          cmp.push(c2);
-          eq = false;
-        }
-        break;
-      case false:
-        if (c1 === c2) {
-          ans.push([start, cmp.join('')]);
-          cmp = [];
-          eq = true;
-        } else {
-          cmp.push(c2);
-        }
-        break;
+    if (eq) {
+      if (c1 !== c2) {
+        start = idx;
+        cmp.push(c2);
+        eq = false;
+      }
+    } else {
+      if (c1 === c2) {
+        ans.push([start, cmp.join('')]);
+        cmp = [];
+        eq = true;
+      } else {
+        cmp.push(c2);
+      }
     }
     idx += 1;
   }

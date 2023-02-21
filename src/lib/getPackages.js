@@ -1,7 +1,7 @@
 import path from 'path';
 import fs from 'fs';
 
-export function getPackages() {
+export default function getPackages() {
   const ans = [];
   const alldir = path.resolve('.drip/local/package/');
   fs.readdirSync(alldir).forEach((n) => {

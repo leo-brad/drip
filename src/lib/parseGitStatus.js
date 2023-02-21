@@ -13,20 +13,29 @@ class NameParser {
       const char = status[i];
       switch (this.code) {
         case 0:
-          if (char !== ' ') {
+          if (char !== ' ' && char !== '\t' && char !== '\n') {
             this.start = i;
             this.code = 1;
           }
           break;
         case 1:
-          if (char === ' ' || char === '\n') {
+          if (char === ' ' || char === '\n' || char === '\t') {
             const { start, names, } = this;
             const name = status.substring(start, i);
-            if (name === '\nUntracked') {
+            switch (name) {
+              case 'new':
+              case 'deleted:':
+              case 'modified:':
+              case 'Untracked':
+              case 'Changes':
+                return;
+                return;
+            }
+            if (name === '') {
               return;
             }
             names.push(name);
-            this.start = i;
+            this.start = i + 1;
             this.code = 0;
           }
           break;
@@ -109,7 +118,10 @@ export default function parseGitStatus(status) {
       case 1: {
         const nameParser = new NameParser(status, i);
         nameParser.parse();
-        ans[title] = nameParser.getNames();
+        if (ans[title] === undefined) {
+          ans[title] = [];
+        }
+        ans[title] = ans[title].concat(nameParser.getNames());
         i = nameParser.getLast();
         title = '';
         type = 0;

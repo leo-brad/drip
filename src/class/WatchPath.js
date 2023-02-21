@@ -81,8 +81,13 @@ class WatchPath {
 
   watchChange(location) {
     const { emitter, } = this;
+    if (this.checkModify()) {
+      this.generateEvent('modified', path.resolve(location));
+    }
     fs.watch(location, (eventType, filename) => {
       if (this.checkModify()) {
+        this.generateEvent('modified', path.resolve(location));
+      } else {
         this.generateEvent(eventType, path.resolve(location));
       }
     });
