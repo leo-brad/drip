@@ -6,30 +6,10 @@ import parseGitStatus from '~/lib/parseGitStatus';
 
 class WatchPath {
   constructor(emitter, config) {
-    this.checkGitExist();
     this.emitter = emitter;
     this.config = config;
     this.events = [];
     this.started = false;
-  }
-
-  checkGitExist() {
-    try {
-      execSync('git status');
-    } catch (e) {
-      console.log([
-        '',
-        chalk.bold('Check git status error') + ':',
-        '',
-        'Drip need use `' + chalk.bold('git') + '` get file content change message.',
-        '',
-        chalk.bold('Useful comment') + ':',
-        '',
-        '  - Please use `' + chalk.bold('git init') + '` initial current project as a git project.',
-        '',
-      ].join('\n'));
-      process.exit(0);
-    }
   }
 
   start() {
