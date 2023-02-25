@@ -2,7 +2,7 @@ import os from 'os';
 
 export default function getUnknownPoolSize(config) {
   const { adjustCore=0, } = config;
-  const factor = 4;
+  const factor = 6;
   const cpusLength = os.cpus().length;
   let size = cpusLength * factor + adjustCore;
   if (size < 1) {
