@@ -28,7 +28,7 @@ class EventSchedule {
   }
 
   writeData(data) {
-    console.log(JSON.stringify(data));
+    //console.log(JSON.stringify(data));
   }
 
   sendPackages() {
@@ -40,6 +40,7 @@ class EventSchedule {
   fillProcPool(location) {
     this.pp = new ProcPool(this.size);
     const { pps, pp, } = this;
+    console.log(pps);
     pps.forEach(({ pri, proc, }) => pp.addPriProc(pri, proc));
     pp.updatePool();
     this.pool = pp.getPool().map((proc) => proc.start());
@@ -85,6 +86,7 @@ class EventSchedule {
           const record = ii.indexInstance(location);
           ic.cache(pkg, instance, record);
         } else {
+          console.log(1);
           this.cleanProcPool();
           this.fillProcPool(location);
         }

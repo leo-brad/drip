@@ -29,7 +29,6 @@ class NameParser {
               case 'Untracked':
               case 'Changes':
                 return;
-                return;
             }
             if (name === '') {
               return;
@@ -57,6 +56,7 @@ class TitleLexer {
     this.titleLexers = titleLexers;
     this.template = template;
     this.index = 0;
+    this.code = 0;
   }
 
   scan(char) {
@@ -68,14 +68,20 @@ class TitleLexer {
         code = 1;
       }
     } else {
-      this.titleLexers.splice(index, 1);
+      const { titleLexers, } = this;
+      for (let i = 0; i < titleLexers; i += 1) {
+        if (titleLexers[i] === this) {
+          this.titleLexers.splice(i, 1);
+          break;
+        }
+      }
     }
     return code;
   }
 }
 
 export default function parseGitStatus(status) {
-  const titleLexers = [];
+  let titleLexers = [];
   const ans = {};
   let type = 0;
   let title = '';
@@ -103,15 +109,15 @@ export default function parseGitStatus(status) {
             break;
         }
         if (titleLexers.length !== 0) {
-          titleLexers.forEach((tl) => {
-            switch (tl.scan(char)) {
-              case 1:
-                title = tl.template;
-                type = 1;
-                break;
-              default:
+          for (let i = 0; i < titleLexers.length; i += 1) {
+            const tl = titleLexers[i];
+            if (tl.scan(char) === 1) {
+              title = tl.template;
+              type = 1;
+              titleLexers = [];
+              break;
             }
-          });
+          }
         }
         break;
       }

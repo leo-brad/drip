@@ -6,7 +6,7 @@
   "license": "MIT",
   "description": "Drip core project.",
   "scripts": {
-    "run": "yarn run build && node dist/index.js '{\"interval\":5000,\"minMem\":100,\"adjustCore\":0,\"ignores\":[\".drip/local/\",\".git/\",\".gitkeep\"],\"packages\":[\"[shell](/tmp/drip-package-shell-static/.git/)\"],\"indexLevel\":2}' '/tmp/example/'",
+    "run": "yarn run build && node dist/index.js '{\"interval\":5000,\"minMem\":100,\"adjustCore\":0,\"ignores\":[\".drip/local/\",\".git/\",\".gitkeep\", \"node_modules\"],\"packages\":[\"[shell](/tmp/drip-package-shell-static/.git/)\"],\"indexLevel\":2}' '/Users/eric/OpenSource/drip-lib'",
     "test": "jest ./test",
     "lint": "eslint ./src",
     "build": "babel src --out-dir dist"

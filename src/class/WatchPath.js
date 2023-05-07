@@ -112,7 +112,7 @@ class WatchPath {
       return ans;
     }
     for (let i = 0; i < ignores.length; i += 1) {
-      if (new RegExp('^' + ignores[i]).test(path.relative('.', location))) {
+      if (new RegExp(ignores[i]).test(path.relative('.', location))) {
         ans = true;
         break;
       };
