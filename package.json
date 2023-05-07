@@ -1,10 +1,10 @@
 {
-  "name": "drip-gui",
+  "name": "drip",
   "version": "1.0.0",
   "main": "index.js",
-  "author": "eric hart",
+  "author": "Leo Brad",
   "license": "MIT",
-  "description": "A gui for drip.",
+  "description": "Drip core project.",
   "scripts": {
     "run": "yarn run build && node dist/index.js '{\"interval\":5000,\"minMem\":100,\"adjustCore\":0,\"ignores\":[\".drip/local/\",\".git/\",\".gitkeep\"],\"packages\":[\"[shell](/tmp/drip-package-shell-static/.git/)\"],\"indexLevel\":2}' '/tmp/example/'",
     "test": "jest ./test",

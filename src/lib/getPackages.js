@@ -8,7 +8,7 @@ export default function getPackages() {
     const eachdir = path.join(alldir, n);
     if (fs.lstatSync(eachdir).isDirectory()) {
       ans.push(fs.readFileSync(
-        path.join(eachdir, 'dist', 'render.bundle.js')
+        path.join(eachdir, 'render.bundle.js')
       ).toString());
     }
   });

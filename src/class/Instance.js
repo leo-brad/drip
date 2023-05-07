@@ -53,7 +53,7 @@ class Instance {
             command: 'node',
             args: [
               path.join(
-                '.drip', 'local', 'package', pkg, 'dist', 'index.js'
+                '.drip', 'local', 'package', pkg, 'index.js'
               ),
               config,
             ],

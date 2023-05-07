@@ -28,7 +28,7 @@ class EventSchedule {
   }
 
   writeData(data) {
-    //console.log(JSON.stringify(data));
+    console.log(JSON.stringify(data));
   }
 
   sendPackages() {
