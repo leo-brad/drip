@@ -31,3 +31,9 @@ Start drip local pattern in drip project finally.
 ```sh
 drip start
 ```
+
+## Configuaration
+
+Each package can configuration in `.drip/local/instance/[package]/` and
+`.drip/local/instance/[package]/`.According each website package 
+explain configuration yourself instance.
