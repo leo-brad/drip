@@ -35,7 +35,7 @@ drip start
 ## Configuaration
 
 In drip project directory.Each package can configuration in `.drip/local/instance/[package]:instance`
-and `.drip/local/instance/[package]:instance/`.According each website package 
+and `.drip/project/instance/[package]:instance/`.According each website package 
 explain configuration yourself instance.
 
 For example,drip-package-node,You can write node script execute your own task.For example,unit test task.Each test spec with a instance.
