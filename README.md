@@ -37,3 +37,15 @@ drip start
 In drip project directory.Each package can configuration in `.drip/local/instance/[package]:instance`
 and `.drip/local/instance/[package]:instance/`.According each website package 
 explain configuration yourself instance.
+
+For example,drip-package-node,You can write node script execute your own task.For example,unit test task.Each test spec with a instance.
+
+```sh
+child_process.execSync('jest path/[name].test.js', { stdio: 'inherit', });
+```
+
+Style lint is other way for your execute your own task.
+
+```sh
+child_process.execSync('eslint ./src', { stdio: 'inherit', });
+```
