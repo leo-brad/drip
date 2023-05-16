@@ -1,5 +1,16 @@
 # Drip
 
+## Project Highlight
+
+- Project use progress pool which size is fixed.Parrelle execute program whiteout switch progress overhead.
+- Project Gui use minimal visual window.Dom only mapping the content which need to render.Save Gui program cost and 
+improve program running speed.
+- Project use unite Gui interface.whatever is local pattern or network pattern execute drip program.Program has a 
+unite and beatiful interface.
+- Program permanent operation.Use most of free time execute program effective.
+- Project provider web application.User can cross web application get information,download and install package and 
+program.Make package be shared and uploaded easily.
+
 ## Quick Start
 
 Install drip pass execute follow shell script.
